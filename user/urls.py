@@ -9,5 +9,6 @@ urlpatterns = [
     path('confirm-email/', views.ConfirmEmailView.as_view(), name='confirm-email'),
     path('register/',
          views.CompleteRegistration.as_view(), name='register'),
-    path('login/', views.CreateTokenView.as_view(), name='login')
+    path('login/', views.CreateTokenView.as_view(), name='login'),
+    path('update/<int:pk>', views.UpdateUserView.as_view(), name='update')
 ]

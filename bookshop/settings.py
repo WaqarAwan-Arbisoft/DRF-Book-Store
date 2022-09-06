@@ -153,3 +153,9 @@ REST_FRAMEWORK = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / "emails"
+
+
+SPECTACULAR_SETTINGS = {
+    # This will convert the URI field to a file field in Swagger
+    'COMPONENT_SPLIT_REQUEST': True,
+}

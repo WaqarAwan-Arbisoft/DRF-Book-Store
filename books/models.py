@@ -10,12 +10,11 @@ class Book(models.Model):
     name = models.CharField(max_length=150, blank=False, unique=True, error_messages={
         'required': "Please provide book name"
     })
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='books', on_delete=models.CASCADE)
+    author = models.CharField(max_length=150)
     publishDate = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=5, decimal_places=2)
-    noOfPages = models.IntegerField(blank=True)
+    noOfPages = models.IntegerField()
     image = models.ImageField(upload_to="book-covers", default="")
 
     def __str__(self):

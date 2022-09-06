@@ -1,17 +1,14 @@
 """
 URLs for the Book APIs
 """
-
-from rest_framework.routers import DefaultRouter
 from django.urls import include, path
 
 from . import views
 
-router = DefaultRouter()
-router.register('', views.BookViewSet)
-
-app_name = 'books'
-
 urlpatterns = [
-    path('', include(router.urls)),
+    path('create/', views.CreateBookView.as_view(), name='create-book'),
+    path('fetch-all/', views.ListBooksView.as_view(), name='fetch-all'),
+    path('fetch-book/<int:pk>', views.GetBookView.as_view(), name='fetch-book'),
+    path('updateDestroy/<int:pk>', views.UpdateDestroyView.as_view(),
+         name='update-delete-book')
 ]

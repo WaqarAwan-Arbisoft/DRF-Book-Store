@@ -3,7 +3,7 @@ Views for the User API
 """
 
 from rest_framework import generics, authentication, permissions
-from .serializers import UserSerializer
+from .serializers import UpdateUserSerializer, UserSerializer
 from .serializers import TempUserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from .serializers import AuthTokenSerializer
@@ -38,3 +38,9 @@ class CreateTokenView(ObtainAuthToken):
     """Create an auth token for the user"""
     serializer_class = AuthTokenSerializer
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+
+class UpdateUserView(generics.UpdateAPIView):
+    """Update the existing user"""
+    serializer_class = UpdateUserSerializer
+    queryset = User.objects.all()

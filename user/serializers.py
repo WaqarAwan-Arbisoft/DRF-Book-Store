@@ -31,15 +31,21 @@ class UserSerializer(serializers.ModelSerializer):
                 "Your verification code has been expired. Please try again!")
         return get_user_model().objects.create_user(**tempUser.values()[0])
 
-    def update(self, instance, validated_data):
-        """Update and return an existing user"""
-        password = validated_data.pop('password', None)
-        user = super().update(instance, validated_data)
-        if password:
-            user.set_password(password)
-            user.save()
 
-        return user
+class UpdateUserSerializer(UserSerializer):
+    """Serializer for update user"""
+    class Meta(UserSerializer.Meta):
+        fields = ['password', 'name', 'image', 'country', 'age']
+
+        def update(self, instance, validated_data):
+            """Update and return an existing user"""
+            password = validated_data.pop('password', None)
+            user = super().update(instance, validated_data)
+            if password:
+                user.set_password(password)
+                user.save()
+
+            return user
 
 
 class TempUserSerializer(serializers.ModelSerializer):
