@@ -30,7 +30,7 @@ class GetBookView(generics.RetrieveAPIView):
 
 
 class UpdateDestroyView(generics.UpdateAPIView, generics.DestroyAPIView):
-    """Update and Delete a book"""
+    """Update and Delete a book(Admin only)"""
     serializer_class = BookDetailSerializer
     queryset = Book.objects.all()
     authentication_classes = [TokenAuthentication]
