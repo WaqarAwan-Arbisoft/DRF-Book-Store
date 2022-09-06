@@ -6,7 +6,7 @@ import random
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, MinValueValidator
 
 
 class UserManager(BaseUserManager):
@@ -40,9 +40,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(
         max_length=255, blank=False)
     image = models.ImageField(upload_to="images")
+    age = models.IntegerField(validators=[MinValueValidator(15)], default=18)
+    country = models.CharField(max_length=50, default='Pakistan')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    creation = models.DateTimeField(default=timezone.now())
+    creation = models.DateTimeField(auto_now_add=True)
     user_code = models.IntegerField(blank=False)
 
     objects = UserManager()
@@ -57,6 +59,8 @@ class TempUser(models.Model):
     name = models.CharField(max_length=255, blank=False)
     image = models.ImageField(
         upload_to="images", default="images/DEFAULT_PROFILE_IMAGE_BACKEND_UPLOADED.png")
-    creation = models.DateTimeField(default=timezone.now())
+    age = models.IntegerField(validators=[MinValueValidator(15)], default=18)
+    country = models.CharField(max_length=50, default='Pakistan')
+    creation = models.DateTimeField(auto_now_add=True)
     user_code = models.IntegerField(
         default=random.randint(100000, 999999), unique=True, null=True, blank=True)

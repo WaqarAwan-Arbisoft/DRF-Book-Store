@@ -45,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TempUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = TempUser
-        fields = ['email', 'password', 'name', 'image']
+        fields = ['email', 'password', 'name', 'image', 'country', 'age']
 
 
 class AuthTokenSerializer(serializers.Serializer):
