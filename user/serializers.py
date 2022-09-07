@@ -4,37 +4,47 @@ Serializers for the User API View
 from django.utils import timezone
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
-from .models import User
-from .models import TempUser
-from datetime import datetime, timedelta
+from .models import TempUser, UserCode
+from datetime import timedelta
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """Serializer for the user object"""
+class TempUserSerializer(serializers.ModelSerializer):
+    """Serializer for a temporary user"""
+    class Meta:
+        model = TempUser
+        fields = ['email', 'password', 'name', 'image', 'country', 'age']
+
+
+class UserCodeSerializer(serializers.ModelSerializer):
+    """Serializer for user Code"""
+    class Meta:
+        model = UserCode
+        fields = '__all__'
+
+    def create(self, validated_data):
+        """Create a new user in the system"""
+
+        tempUser = None
+        try:
+            tempUser = TempUser.objects.get(
+                user_code=validated_data['user_code'])
+        except:
+            raise serializers.ValidationError("Invalid OTP provided")
+        serializedTempUser = TempUserSerializer(tempUser)
+        if timezone.now() > (tempUser.creation+timedelta(minutes=3)):
+            tempUser.delete()
+            raise serializers.ValidationError(
+                "Your verification code has been expired. Please try again!")
+        tempUser.delete()
+        get_user_model().objects.create_user(**serializedTempUser.data)
+        return super().create(validated_data)
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    """Serializer for update user"""
 
     class Meta:
         model = get_user_model()
-        fields = ['user_code']
-        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
-
-    def create(self, validated_data):
-        """Create and return a new user"""
-        tempUser = TempUser.objects.filter(
-            user_code=validated_data['user_code'])
-        if (len(tempUser) == 0):
-            raise serializers.ValidationError(
-                "Invalid user code.", code='authorization')
-        if timezone.now() > (tempUser[0].creation+timedelta(minutes=3)):
-            tempUser = TempUser.objects.filter(
-                user_code=validated_data['user_code']).delete()
-            raise serializers.ValidationError(
-                "Your verification code has been expired. Please try again!")
-        return get_user_model().objects.create_user(**tempUser.values()[0])
-
-
-class UpdateUserSerializer(UserSerializer):
-    """Serializer for update user"""
-    class Meta(UserSerializer.Meta):
         fields = ['password', 'name', 'image', 'country', 'age']
 
         def update(self, instance, validated_data):
@@ -48,10 +58,11 @@ class UpdateUserSerializer(UserSerializer):
             return user
 
 
-class TempUserSerializer(serializers.ModelSerializer):
+class AdminUseUserSerializer(serializers.ModelSerializer):
+    """Serializer to be used by admins"""
     class Meta:
-        model = TempUser
-        fields = ['email', 'password', 'name', 'image', 'country', 'age']
+        model = get_user_model()
+        fields = ['email', 'name', 'image', 'country', 'age']
 
 
 class AuthTokenSerializer(serializers.Serializer):

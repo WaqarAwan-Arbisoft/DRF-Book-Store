@@ -2,15 +2,14 @@
 Views for the User API
 """
 
-from rest_framework import generics, authentication, permissions
-from .serializers import UpdateUserSerializer, UserSerializer
-from .serializers import TempUserSerializer
+from rest_framework import generics, authentication, permissions, exceptions
+
+from user.models import User
+from .serializers import TempUserSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, AdminUseUserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
-from .serializers import AuthTokenSerializer
 from rest_framework.settings import api_settings
 from django.core import mail
-from .models import User
-import random
+import pyotp
 
 
 class ConfirmEmailView(generics.CreateAPIView):
@@ -19,7 +18,11 @@ class ConfirmEmailView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         """Sending email and perform the user creation in the system"""
-        code = random.randint(100000, 999999)
+        if User.objects.filter(email=serializer.validated_data['email']):
+            raise exceptions.ValidationError(
+                "Another user with this email already exists.", code='email')
+        totp = pyotp.TOTP('base32secret3232')
+        code = totp.now()
         with mail.get_connection() as connection:
             mail.EmailMessage(
                 "Email Verification", f"<h1>${code}</h1>", "the-book-spot@admin.com", [
@@ -31,7 +34,7 @@ class ConfirmEmailView(generics.CreateAPIView):
 
 class CompleteRegistration(generics.CreateAPIView):
     """Create a new user in the system"""
-    serializer_class = UserSerializer
+    serializer_class = UserCodeSerializer
 
 
 class CreateTokenView(ObtainAuthToken):
@@ -43,4 +46,16 @@ class CreateTokenView(ObtainAuthToken):
 class UpdateUserView(generics.UpdateAPIView):
     """Update the existing user"""
     serializer_class = UpdateUserSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return User.objects.get(id=self.request.user.id)
+
+
+class ListAllView(generics.ListAPIView):
+    """List all users(Admin only)"""
+    serializer_class = AdminUseUserSerializer
     queryset = User.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAdminUser]

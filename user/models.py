@@ -3,10 +3,9 @@ User model file
 """
 
 import random
-from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
-from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.validators import MinLengthValidator
 
 
 class UserManager(BaseUserManager):
@@ -19,9 +18,6 @@ class UserManager(BaseUserManager):
         user = self.model(email=self.normalize_email(email), **extraFields)
         user.set_password(password)
         user.save(using=self._db)
-        if extraFields.get('user_code'):
-            TempUser.objects.filter(
-                user_code=extraFields['user_code']).delete()
         return user
 
     def create_superuser(self, email, password):
@@ -29,6 +25,7 @@ class UserManager(BaseUserManager):
         user = self.create_user(email, password)
         user.is_staff = True
         user.is_superuser = True
+        user.name = 'admin'
         user.save(using=self._db)
 
         return user
@@ -40,12 +37,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(
         max_length=255, blank=False)
     image = models.ImageField(upload_to="images")
-    age = models.IntegerField(validators=[MinValueValidator(15)], default=18)
+    age = models.IntegerField(default=18)
     country = models.CharField(max_length=50, default='Pakistan')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     creation = models.DateTimeField(auto_now_add=True)
-    user_code = models.IntegerField(blank=False)
 
     objects = UserManager()
     USERNAME_FIELD = 'email'
@@ -59,8 +55,14 @@ class TempUser(models.Model):
     name = models.CharField(max_length=255, blank=False)
     image = models.ImageField(
         upload_to="images", default="images/DEFAULT_PROFILE_IMAGE_BACKEND_UPLOADED.png")
-    age = models.IntegerField(validators=[MinValueValidator(15)], default=18)
+    age = models.IntegerField(default=18)
     country = models.CharField(max_length=50, default='Pakistan')
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     creation = models.DateTimeField(auto_now_add=True)
     user_code = models.IntegerField(
-        default=random.randint(100000, 999999), unique=True, null=True, blank=True)
+        default=random.randint(100000, 999999), unique=True, blank=True)
+
+
+class UserCode(models.Model):
+    user_code = models.IntegerField()
