@@ -4,7 +4,7 @@ Serializers for the User API View
 from django.utils import timezone
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
-from .models import TempUser, UserCode
+from .models import TempUser, User, UserCode
 from datetime import timedelta
 
 
@@ -13,6 +13,13 @@ class TempUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = TempUser
         fields = ['email', 'password', 'name', 'image', 'country', 'age']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer for the user class"""
+    class Meta:
+        model = User
+        fields = ['email', 'name', 'image', 'country', 'age']
 
 
 class UserCodeSerializer(serializers.ModelSerializer):

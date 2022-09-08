@@ -2,7 +2,6 @@
 Model for Book
 """
 from django.db import models
-from django.conf import settings
 
 
 class Book(models.Model):
@@ -16,6 +15,3 @@ class Book(models.Model):
     price = models.DecimalField(max_digits=5, decimal_places=2)
     noOfPages = models.IntegerField()
     image = models.ImageField(upload_to="book-covers", default="")
-
-    def __str__(self):
-        return f"Book name is {self.name} written by {self.author.name}"
