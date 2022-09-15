@@ -1,52 +1,37 @@
 """
-Serializers for Shop models
+Serializers for the Shop Models
 """
-from dataclasses import field
 from rest_framework import serializers
-from .models import Cart
+
+from shop.models import Cart, Item
 from books.serializers import BookSerializer
-from books.models import Book
 
 
 class CartSerializer(serializers.ModelSerializer):
-    """Serializer for Cart model"""
+    """Serializer for cart model"""
     class Meta:
         model = Cart
-        fields = []
+        fields = ['owner', 'totalPrice', 'totalQty']
 
 
-class UpdateCartSerializer(serializers.ModelSerializer):
-    """Serializer for updating cart"""
+class ItemSerializer(serializers.ModelSerializer):
+    """Item serializer"""
     class Meta:
-        model = Cart
-        fields = '__all__'
-        extra_kwargs = {'owner': {'read_only': True}, 'totalPrice': {
-            'read_only': True}, 'totalQty': {'read_only': True}}
+        model = Item
+        fields = ['book', 'quantity']
 
-    def update(self, instance, validated_data):
-        print(instance)
-        print(validated_data)
-        return super().update(instance, validated_data)
+
+class RemoveItemSerializer(serializers.ModelSerializer):
+    """Remove item serializer"""
+    class Meta:
+        model = Item
+        fields = ['book']
 
 
 class GetCartSerializer(serializers.ModelSerializer):
-    """Serializer for viewing the cart"""
-    items = BookSerializer(many=True)
+    """Serializer to Get Cart Data"""
+    book = BookSerializer()
 
     class Meta:
-        model = Cart
-        fields = ['owner', 'items', 'totalPrice', 'totalQty']
-
-
-class AddToCartSerializer(serializers.Serializer):
-    """Serializer for cart"""
-    quantity = serializers.IntegerField()
-    bookId = serializers.IntegerField()
-    extra_kwargs = {'quantity': {'required': True, 'allow_blank': False},
-                    'bookId': {'required': True, 'allow_blank': False}}
-
-    def create(self, validated_data):
-        return validated_data
-
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        model = Item
+        fields = ['book', 'quantity']

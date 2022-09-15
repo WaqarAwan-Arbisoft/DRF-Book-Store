@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user class"""
     class Meta:
         model = User
-        fields = ['email', 'name', 'image', 'country', 'age']
+        fields = ['email', 'name', 'image', 'country', 'age', 'is_staff']
 
 
 class UserCodeSerializer(serializers.ModelSerializer):
@@ -36,12 +36,13 @@ class UserCodeSerializer(serializers.ModelSerializer):
             tempUser = TempUser.objects.get(
                 user_code=validated_data['user_code'])
         except:
-            raise serializers.ValidationError("Invalid OTP provided")
+            raise serializers.ValidationError(
+                {"detail": "Invalid OTP entered."})
         serializedTempUser = TempUserSerializer(tempUser)
         if timezone.now() > (tempUser.creation+timedelta(minutes=3)):
             tempUser.delete()
             raise serializers.ValidationError(
-                "Your verification code has been expired. Please try again!")
+                {"detail": "Your verification code has been expired. Please try again!"})
         tempUser.delete()
         get_user_model().objects.create_user(**serializedTempUser.data)
         return super().create(validated_data)
@@ -90,7 +91,6 @@ class AuthTokenSerializer(serializers.Serializer):
             username=email,
             password=password
         )
-
         if not user:
             raise serializers.ValidationError(
                 "Unable to authenticate with the provided credentials", code='authorization')

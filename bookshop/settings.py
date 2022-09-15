@@ -147,7 +147,7 @@ CORS_ALLOW_METHODS = [
 ]
 
 REST_FRAMEWORK = {
-    'NON_FIELD_ERRORS_KEY': 'error',
+    'NON_FIELD_ERRORS_KEY': 'detail',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 

@@ -1,12 +1,14 @@
 """
 Views for the Book APIs
 """
+from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser
 from rest_framework import generics
 
 from .models import Book
 from .serializers import BookDetailSerializer, BookSerializer
+from rest_framework.filters import SearchFilter
 
 
 class CreateBookView(generics.CreateAPIView):
@@ -19,8 +21,10 @@ class CreateBookView(generics.CreateAPIView):
 
 class ListBooksView(generics.ListAPIView):
     """List all the books available"""
-    serializer_class = BookSerializer
+    serializer_class = BookDetailSerializer
     queryset = Book.objects.all()
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
 
 
 class GetBookView(generics.RetrieveAPIView):

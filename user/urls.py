@@ -11,5 +11,6 @@ urlpatterns = [
          views.CompleteRegistration.as_view(), name='register'),
     path('login/', views.CreateTokenView.as_view(), name='login'),
     path('update/', views.UpdateUserView.as_view(), name='update'),
-    path('fetch-all/', views.ListAllView.as_view(), name='list-all')
+    path('fetch-all/', views.ListAllView.as_view(), name='list-all'),
+    path('fetch-user/', views.GetUserData.as_view(), name='fetch-user-data')
 ]
