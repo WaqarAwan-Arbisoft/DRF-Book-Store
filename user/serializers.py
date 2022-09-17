@@ -4,14 +4,14 @@ Serializers for the User API View
 from django.utils import timezone
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
-from .models import TempUser, User, UserCode
+from .models import User, UserCode
 from datetime import timedelta
 
 
-class TempUserSerializer(serializers.ModelSerializer):
+class NewUserSerializer(serializers.ModelSerializer):
     """Serializer for a temporary user"""
     class Meta:
-        model = TempUser
+        model = get_user_model()
         fields = ['email', 'password', 'name', 'image', 'country', 'age']
 
 
@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user class"""
     class Meta:
         model = User
-        fields = ['email', 'name', 'image', 'country', 'age', 'is_staff']
+        fields = ['id', 'email', 'name', 'image', 'country', 'age', 'is_staff']
 
 
 class UserCodeSerializer(serializers.ModelSerializer):
@@ -33,18 +33,19 @@ class UserCodeSerializer(serializers.ModelSerializer):
 
         tempUser = None
         try:
-            tempUser = TempUser.objects.get(
+            tempUser = User.objects.get(
                 user_code=validated_data['user_code'])
         except:
             raise serializers.ValidationError(
                 {"detail": "Invalid OTP entered."})
-        serializedTempUser = TempUserSerializer(tempUser)
         if timezone.now() > (tempUser.creation+timedelta(minutes=3)):
             tempUser.delete()
             raise serializers.ValidationError(
                 {"detail": "Your verification code has been expired. Please try again!"})
         tempUser.delete()
-        get_user_model().objects.create_user(**serializedTempUser.data)
+        tempUser.tempUser = False
+        tempUser.user_code = ''
+        tempUser.save()
         return super().create(validated_data)
 
 

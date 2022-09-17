@@ -36,23 +36,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(
         max_length=255, blank=False)
-    image = models.ImageField(upload_to="images")
-    age = models.IntegerField(default=18)
-    country = models.CharField(max_length=50, default='Pakistan')
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-    creation = models.DateTimeField(auto_now_add=True)
-
-    objects = UserManager()
-    USERNAME_FIELD = 'email'
-
-
-class TempUser(models.Model):
-    """Temporary user in the system"""
-    email = models.EmailField(max_length=255, unique=True)
-    password = models.CharField(max_length=20, validators=[
-                                MinLengthValidator(5)])
-    name = models.CharField(max_length=255, blank=False)
     image = models.ImageField(
         upload_to="images", default="images/DEFAULT_PROFILE_IMAGE_BACKEND_UPLOADED.png")
     age = models.IntegerField(default=18)
@@ -60,8 +43,11 @@ class TempUser(models.Model):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     creation = models.DateTimeField(auto_now_add=True)
-    user_code = models.IntegerField(
-        default=random.randint(100000, 999999), unique=True, blank=True)
+    user_code = models.IntegerField(unique=True, blank=True)
+    tempUser = models.BooleanField(default=True)
+
+    objects = UserManager()
+    USERNAME_FIELD = 'email'
 
 
 class UserCode(models.Model):

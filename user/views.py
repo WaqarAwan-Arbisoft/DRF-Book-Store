@@ -4,8 +4,8 @@ Views for the User API
 
 from rest_framework import generics, authentication, permissions, exceptions
 
-from user.models import TempUser, User
-from .serializers import TempUserSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, AdminUseUserSerializer, UserSerializer
+from user.models import User
+from .serializers import NewUserSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, AdminUseUserSerializer, UserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from django.core import mail
@@ -15,15 +15,16 @@ from datetime import timedelta, datetime
 
 class ConfirmEmailView(generics.CreateAPIView):
     """Create a temporary user"""
-    serializer_class = TempUserSerializer
+    serializer_class = NewUserSerializer
 
     def perform_create(self, serializer):
         """Sending email and perform the user creation in the system"""
-        TempUser.objects.filter(
-            creation__lt=datetime.now()-timedelta(minutes=3)).delete()
+        User.objects.filter(creation__lt=datetime.now() -
+                            timedelta(minutes=3)).delete()
         if User.objects.filter(email=serializer.validated_data['email']):
-            raise exceptions.ValidationError({"detail":
-                                              "Another user with this email already exists."})
+            raise exceptions.ValidationError(
+                {"detail": "Another user with this email already exists."})
+
         totp = pyotp.TOTP('base32secret3232')
         code = totp.now()
         with mail.get_connection() as connection:
