@@ -8,32 +8,11 @@ from user.models import User
 from .serializers import NewUserSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, AdminUseUserSerializer, UserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
-from django.core import mail
-import pyotp
-from datetime import timedelta, datetime
 
 
 class ConfirmEmailView(generics.CreateAPIView):
     """Create a temporary user"""
     serializer_class = NewUserSerializer
-
-    def perform_create(self, serializer):
-        """Sending email and perform the user creation in the system"""
-        User.objects.filter(creation__lt=datetime.now() -
-                            timedelta(minutes=3)).delete()
-        if User.objects.filter(email=serializer.validated_data['email']):
-            raise exceptions.ValidationError(
-                {"detail": "Another user with this email already exists."})
-
-        totp = pyotp.TOTP('base32secret3232')
-        code = totp.now()
-        with mail.get_connection() as connection:
-            mail.EmailMessage(
-                "Email Verification", f"<h1>${code}</h1>", "the-book-spot@admin.com", [
-                    serializer.validated_data['email']],
-                connection=connection,
-            ).send()
-        serializer.save(user_code=code)
 
 
 class CompleteRegistration(generics.CreateAPIView):

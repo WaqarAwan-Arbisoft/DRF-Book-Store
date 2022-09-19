@@ -3,9 +3,9 @@ Models for the Shop app
 """
 from django.db import models
 from django.conf import settings
-
+from django.contrib.auth import get_user_model
 from books.models import Book
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Cart(models.Model):
@@ -28,3 +28,14 @@ class Item(models.Model):
 
     class Meta:
         unique_together = [['cart', 'book']]
+
+
+class Review(models.Model):
+    """Review of the Book"""
+    book = models.ForeignKey(Book, related_name='book',
+                             on_delete=models.CASCADE)
+    comment = models.TextField()
+    rating = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)])
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    creation = models.DateField(auto_now_add=True, blank=True)

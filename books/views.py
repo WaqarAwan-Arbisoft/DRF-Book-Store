@@ -5,6 +5,7 @@ from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser
 from rest_framework import generics
+from rest_framework import pagination
 
 from .models import Book
 from .serializers import BookDetailSerializer, BookSerializer
@@ -25,6 +26,8 @@ class ListBooksView(generics.ListAPIView):
     queryset = Book.objects.all()
     filter_backends = [SearchFilter]
     search_fields = ['name']
+    PAGE_SIZE = 2
+    pagination_class = pagination.LimitOffsetPagination
 
 
 class GetBookView(generics.RetrieveAPIView):

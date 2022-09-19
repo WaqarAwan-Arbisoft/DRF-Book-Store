@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -149,6 +155,8 @@ CORS_ALLOW_METHODS = [
 REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'detail',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'PAGE_SIZE': 2
 }
 
 

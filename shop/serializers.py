@@ -3,7 +3,7 @@ Serializers for the Shop Models
 """
 from rest_framework import serializers
 
-from shop.models import Cart, Item
+from shop.models import Cart, Item, Review
 from books.serializers import BookSerializer
 
 
@@ -35,3 +35,17 @@ class GetCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['book', 'quantity']
+
+
+class UserReviewSerializer(serializers.ModelSerializer):
+    """Serializer for User Review"""
+    class Meta:
+        model = Review
+        fields = "__all__"
+
+
+class FetchUserReviewSerializer(serializers.ModelSerializer):
+    """Serializer to fetch user review"""
+    class Meta:
+        model = Review
+        fields = ['book']

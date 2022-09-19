@@ -6,6 +6,7 @@ import random
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from django.core.validators import MinLengthValidator
+import pyotp
 
 
 class UserManager(BaseUserManager):
@@ -22,10 +23,14 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password):
         """Create and return a new superuser"""
-        user = self.create_user(email, password)
+        user = self.create_user(
+            email, password, user_code=pyotp.TOTP('base32secret3232').now())
         user.is_staff = True
         user.is_superuser = True
         user.name = 'admin'
+        totp = pyotp.TOTP('base32secret3232')
+        code = totp.now()
+        user.user_code = code
         user.save(using=self._db)
 
         return user
@@ -43,7 +48,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     creation = models.DateTimeField(auto_now_add=True)
-    user_code = models.IntegerField(unique=True, blank=True)
+    user_code = models.IntegerField(
+        unique=True, blank=True)
     tempUser = models.BooleanField(default=True)
 
     objects = UserManager()

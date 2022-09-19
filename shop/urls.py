@@ -15,5 +15,9 @@ urlpatterns = [
     path('cart-item/update-quantity/',
          views.UpdateItemQuantityView.as_view(), name='update-item-quantity'),
     path('cart-item/remove-item/',
-         views.RemoveItemView.as_view(), name='remove-item')
+         views.RemoveItemView.as_view(), name='remove-item'),
+    path('save-stripe-info/', views.save_stripe_info, name='save-payment'),
+    path('add-review/', views.AddReviewView.as_view(), name='add-review'),
+    path('fetch-reviews/<int:id>',
+         views.GetBookReview.as_view(), name='fetch-reviews')
 ]

@@ -5,8 +5,13 @@ from rest_framework import generics, exceptions
 from rest_framework import authentication
 from rest_framework import permissions
 from books.models import Book
-from shop.models import Cart, Item
-from shop.serializers import CartSerializer, GetCartSerializer, ItemSerializer, RemoveItemSerializer
+from bookshop.settings import env
+from shop.models import Cart, Item, Review
+from shop.serializers import CartSerializer, FetchUserReviewSerializer, GetCartSerializer, ItemSerializer, RemoveItemSerializer, UserReviewSerializer
+import stripe
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class AddToCartView(generics.CreateAPIView):
@@ -143,3 +148,59 @@ class RemoveItemView(generics.CreateAPIView):
         item.delete()
         if (len(cart.items.all())) == 0:
             cart.delete()
+
+
+stripe.api_key = env('STRIPE_API_KEY')
+
+
+@api_view(['POST'])
+@authentication_classes([authentication.TokenAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def save_stripe_info(request):
+    data = request.data
+    email = data['email']
+    amount = data['amount']
+    payment_method_id = data['payment_method_id']
+    extra_msg = ''
+
+    customer_data = stripe.Customer.list(email=email).data
+
+    if len(customer_data) == 0:
+        customer = stripe.Customer.create(
+            email=email, payment_method=payment_method_id)
+    else:
+        customer = customer_data[0]
+        extra_msg = "Customer already existed."
+    try:
+        stripe.PaymentIntent.create(
+            customer=customer,
+            payment_method=payment_method_id,
+            currency='usd',
+            amount=amount,
+            confirm=True)
+    except:
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        data={'message': 'Failure', 'data': {
+                            'customer_id': customer.id, 'extra_msg': extra_msg}
+                        })
+
+    return Response(status=status.HTTP_200_OK,
+                    data={'message': 'Success', 'data': {
+                        'customer_id': customer.id, 'extra_msg': extra_msg}
+                    })
+
+
+class AddReviewView(generics.CreateAPIView):
+    """API for adding review to the book"""
+    serializer_class = UserReviewSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class GetBookReview(generics.ListAPIView):
+    """Get all the Reviews of a book"""
+
+    serializer_class = UserReviewSerializer
+
+    def get_queryset(self):
+        return Review.objects.filter(book=self.kwargs.get('id'))
