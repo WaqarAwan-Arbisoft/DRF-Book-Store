@@ -12,5 +12,11 @@ urlpatterns = [
     path('login/', views.CreateTokenView.as_view(), name='login'),
     path('update/', views.UpdateUserView.as_view(), name='update'),
     path('fetch-all/', views.ListAllView.as_view(), name='list-all'),
-    path('fetch-user/', views.GetUserData.as_view(), name='fetch-user-data')
+    path('fetch-user/', views.GetUserData.as_view(), name='fetch-user-data'),
+    path('recover-password-link/', views.EmailRecoveryLink.as_view(),
+         name='recover-password-link'),
+    path('recovery/<str:token>/', views.CheckTokenAvailability.as_view(),
+         name='check-token-availability'),
+    path('update-password/', views.UpdateRecoveredPasswordView.as_view(),
+         name='update-password')
 ]

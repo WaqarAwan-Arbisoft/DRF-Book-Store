@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from shop.models import Cart, Item, Review
 from books.serializers import BookSerializer
+from user.serializers import UserCommentSerializer
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -39,6 +40,16 @@ class GetCartSerializer(serializers.ModelSerializer):
 
 class UserReviewSerializer(serializers.ModelSerializer):
     """Serializer for User Review"""
+
+    class Meta:
+        model = Review
+        fields = ['book', 'comment', 'rating']
+
+
+class GetReviewSerializer(serializers.ModelSerializer):
+    """Serializer to get Book Reviews"""
+    user = UserCommentSerializer()
+
     class Meta:
         model = Review
         fields = "__all__"

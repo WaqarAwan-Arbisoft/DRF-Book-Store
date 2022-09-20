@@ -1,14 +1,16 @@
 """
 Serializers for the User API View
 """
+import secrets
 from django.utils import timezone
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
-from .models import User, UserCode
+from .models import PasswordRecovery, User, UserCode
 from rest_framework import exceptions
 from django.core import mail
 import pyotp
 from datetime import timedelta, datetime
+from bookshop.settings import env
 
 
 class NewUserSerializer(serializers.ModelSerializer):
@@ -72,7 +74,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
     """Serializer for update user"""
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ['password', 'name', 'image', 'country', 'age']
 
         def update(self, instance, validated_data):
@@ -118,3 +120,51 @@ class AuthTokenSerializer(serializers.Serializer):
                 "Unable to authenticate with the provided credentials", code='authorization')
         attrs['user'] = user
         return attrs
+
+
+class UserCommentSerializer(serializers.ModelSerializer):
+    """Serializer to be used to display comment"""
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'image', 'country']
+
+
+class SetUpdatePasswordTokenSerializer(serializers.ModelSerializer):
+    """Serializer to update the user password"""
+    class Meta:
+        model = PasswordRecovery
+        fields = ['email']
+
+    def create(self, validated_data):
+        """Create and send link to the user"""
+        if not get_user_model().objects.filter(email=validated_data['email']):
+            raise exceptions.ValidationError(
+                {"detail": "No User exists in the system with this email."})
+        if PasswordRecovery.objects.filter(email=validated_data['email']):
+            raise exceptions.ValidationError(
+                {"detail": "A recovery email has already been sent to you."})
+        token = secrets.token_hex(16)
+        with mail.get_connection() as connection:
+            mail.EmailMessage(
+                "Email Verification", f"<a href='{env('FRONTEND_DOMAIN')+'/recover/'+token}' target='_blank'>Recover Account</a>", "the-book-spot@admin.com", [
+                    validated_data['email']],
+                connection=connection,
+            ).send()
+
+        return PasswordRecovery.objects.create(
+            email=validated_data['email'], user_token=token)
+
+
+class RetrieveTokenSerializer(serializers.ModelSerializer):
+    """Serializer to destroy available link"""
+    class Meta:
+        model = PasswordRecovery
+        fields = ['email', 'user_token']
+
+
+class UpdatePasswordSerializer(serializers.ModelSerializer):
+    """Serializer for updating user password"""
+
+    class Meta:
+        model = User
+        fields = ['email', 'password']

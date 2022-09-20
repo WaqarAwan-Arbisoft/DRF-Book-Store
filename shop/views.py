@@ -7,7 +7,7 @@ from rest_framework import permissions
 from books.models import Book
 from bookshop.settings import env
 from shop.models import Cart, Item, Review
-from shop.serializers import CartSerializer, FetchUserReviewSerializer, GetCartSerializer, ItemSerializer, RemoveItemSerializer, UserReviewSerializer
+from shop.serializers import CartSerializer, FetchUserReviewSerializer, GetCartSerializer, GetReviewSerializer, ItemSerializer, RemoveItemSerializer, UserReviewSerializer
 import stripe
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
@@ -196,11 +196,19 @@ class AddReviewView(generics.CreateAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        try:
+            book = Book.objects.get(pk=serializer.validated_data['book'].id)
+        except:
+            raise exceptions.APIException('No Book found with this ID')
+
+        serializer.save(user=self.request.user)
+
 
 class GetBookReview(generics.ListAPIView):
     """Get all the Reviews of a book"""
 
-    serializer_class = UserReviewSerializer
+    serializer_class = GetReviewSerializer
 
     def get_queryset(self):
-        return Review.objects.filter(book=self.kwargs.get('id'))
+        return Review.objects.filter(book=self.kwargs.get('id')).order_by('-id')

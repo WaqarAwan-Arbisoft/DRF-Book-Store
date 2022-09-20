@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.db import models
 from django.core.validators import MinLengthValidator
 import pyotp
+import secrets
 
 
 class UserManager(BaseUserManager):
@@ -58,3 +59,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class UserCode(models.Model):
     user_code = models.IntegerField()
+
+
+class PasswordRecovery(models.Model):
+    """Password Recovery Model"""
+    email = models.EmailField(max_length=255)
+    user_token = models.TextField(default='')
