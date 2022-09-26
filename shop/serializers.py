@@ -1,10 +1,11 @@
 """
 Serializers for the Shop Models
 """
+from dataclasses import fields
 from rest_framework import serializers
 
-from shop.models import Cart, Item, Review
-from books.serializers import BookSerializer
+from shop.models import Cart, Item, Order, OrderedItem, Review
+from books.serializers import BookSerializer, OrderBookSerializer
 from user.serializers import UserCommentSerializer
 
 
@@ -38,6 +39,15 @@ class GetCartSerializer(serializers.ModelSerializer):
         fields = ['book', 'quantity']
 
 
+class CheckStockSerializer(serializers.ModelSerializer):
+    """Serializer to check the stock availability"""
+    items = ItemSerializer(many=True)
+
+    class Meta:
+        model = Item
+        fields = ['items']
+
+
 class UserReviewSerializer(serializers.ModelSerializer):
     """Serializer for User Review"""
 
@@ -60,3 +70,19 @@ class FetchUserReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['book']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """Serializer for order"""
+    class Meta:
+        model = Order
+        fields = "__all__"
+
+
+class OrderItemsSerializer(serializers.ModelSerializer):
+    """Serializer for the order items"""
+    book = OrderBookSerializer()
+
+    class Meta:
+        model = OrderedItem
+        fields = ['quantity', 'book']

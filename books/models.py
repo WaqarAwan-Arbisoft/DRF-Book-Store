@@ -15,3 +15,4 @@ class Book(models.Model):
     price = models.DecimalField(max_digits=5, decimal_places=2)
     noOfPages = models.IntegerField()
     image = models.ImageField(upload_to="book-covers", default="")
+    stock = models.IntegerField(default=10)

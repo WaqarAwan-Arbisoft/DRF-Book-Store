@@ -6,12 +6,13 @@ from rest_framework import authentication
 from rest_framework import permissions
 from books.models import Book
 from bookshop.settings import env
-from shop.models import Cart, Item, Review
-from shop.serializers import CartSerializer, FetchUserReviewSerializer, GetCartSerializer, GetReviewSerializer, ItemSerializer, RemoveItemSerializer, UserReviewSerializer
+from shop.models import Cart, Item, Order, OrderedItem, Review
+from shop.serializers import CartSerializer, CheckStockSerializer, FetchUserReviewSerializer, GetCartSerializer, GetReviewSerializer, ItemSerializer, OrderItemsSerializer, OrderSerializer, RemoveItemSerializer, UserReviewSerializer
 import stripe
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import F
 
 
 class AddToCartView(generics.CreateAPIView):
@@ -31,7 +32,11 @@ class AddToCartView(generics.CreateAPIView):
             book = Book.objects.get(pk=serializer.validated_data['book'].id)
         except:
             raise exceptions.APIException('No Book found with this ID')
-
+        if (book.stock == 0):
+            raise exceptions.APIException('Book is out of stock')
+        if (book.stock < serializer.validated_data['quantity']):
+            raise exceptions.APIException(
+                'Not enough quantity available at the stock.')
         try:
             item = Item.objects.get(book=book, cart=cart)
             item.quantity = int(item.quantity) + \
@@ -89,7 +94,6 @@ class UpdateItemQuantityView(generics.UpdateAPIView):
     def get_object(self):
         item = None
         cart = None
-        print()
         try:
             cart = Cart.objects.get(owner=self.request.user)
             item = Item.objects.get(cart=cart, book=self.request.data['book'])
@@ -153,6 +157,23 @@ class RemoveItemView(generics.CreateAPIView):
 stripe.api_key = env('STRIPE_API_KEY')
 
 
+def initiateOrder(request):
+    cart = None
+    cartItems = None
+    order = None
+    try:
+        cart = Cart.objects.get(owner=request.user)
+    except:
+        raise exceptions.APIException("No cart exists for this user")
+
+    cartItems = Item.objects.filter(cart=cart)
+    order = Order.objects.create(
+        owner=request.user, totalPrice=cart.totalPrice, totalQty=cart.totalQty)
+    for item in cartItems:
+        OrderedItem.objects.create(
+            order=order, book=item.book, quantity=item.quantity)
+
+
 @api_view(['POST'])
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
@@ -164,7 +185,6 @@ def save_stripe_info(request):
     extra_msg = ''
 
     customer_data = stripe.Customer.list(email=email).data
-
     if len(customer_data) == 0:
         customer = stripe.Customer.create(
             email=email, payment_method=payment_method_id)
@@ -184,6 +204,7 @@ def save_stripe_info(request):
                             'customer_id': customer.id, 'extra_msg': extra_msg}
                         })
 
+    initiateOrder(request)
     return Response(status=status.HTTP_200_OK,
                     data={'message': 'Success', 'data': {
                         'customer_id': customer.id, 'extra_msg': extra_msg}
@@ -212,3 +233,54 @@ class GetBookReview(generics.ListAPIView):
 
     def get_queryset(self):
         return Review.objects.filter(book=self.kwargs.get('id')).order_by('-id')
+
+
+class CheckStockView(generics.CreateAPIView):
+    """Check the stock availability with Cart Items"""
+    serializer_class = CheckStockSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        """Check the items and stock"""
+        for item in serializer.validated_data['items']:
+            if (item['book'].stock < item['quantity']):
+                raise exceptions.APIException(
+                    f"Not enough quantity available for {item['book'].name}. You selected {item['quantity']} and {item['book'].stock} is available.")
+
+
+class PurchaseFromStock(generics.CreateAPIView):
+    """Update the stock after purchase"""
+    serializer_class = CheckStockSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        """Perform the update on each book"""
+        for item in serializer.validated_data['items']:
+            item['book'].stock = F('stock')-item['quantity']
+            item['book'].save()
+
+
+class FetchOrdersView(generics.ListAPIView):
+    """Fetch the Orders of a particular user"""
+    serializer_class = OrderSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(owner=self.request.user)
+
+
+class FetchOrderDetail(generics.ListAPIView):
+    """Fetch the details of an order"""
+    serializer_class = OrderItemsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        orderedItems = OrderedItem.objects.filter(
+            order__id=self.kwargs.get('pk'), order__owner=self.request.user)
+        if (len(orderedItems) == 0):
+            raise exceptions.APIException("No Item exists")
+        return orderedItems

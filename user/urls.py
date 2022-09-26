@@ -18,5 +18,5 @@ urlpatterns = [
     path('recovery/<str:token>/', views.CheckTokenAvailability.as_view(),
          name='check-token-availability'),
     path('update-password/', views.UpdateRecoveredPasswordView.as_view(),
-         name='update-password')
+         name='update-password'),
 ]
