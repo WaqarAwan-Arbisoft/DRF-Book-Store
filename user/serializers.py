@@ -34,7 +34,6 @@ class NewUserSerializer(serializers.ModelSerializer):
                     validated_data['email']],
                 connection=connection,
             ).send()
-        # serializer.save(user_code=code)
         return get_user_model().objects.create_user(**validated_data, user_code=code)
 
 

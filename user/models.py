@@ -29,9 +29,7 @@ class UserManager(BaseUserManager):
         user.is_staff = True
         user.is_superuser = True
         user.name = 'admin'
-        totp = pyotp.TOTP('base32secret3232')
-        code = totp.now()
-        user.user_code = code
+        user.tempUser = False
         user.save(using=self._db)
 
         return user
