@@ -44,6 +44,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'name', 'image', 'country', 'age', 'is_staff']
 
 
+class UserSerializerPublic(serializers.ModelSerializer):
+    """Serializer for the user class"""
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'name', 'image', 'country', 'age']
+
+
 class UserCodeSerializer(serializers.ModelSerializer):
     """Serializer for user Code"""
     class Meta:

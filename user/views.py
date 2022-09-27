@@ -5,7 +5,7 @@ Views for the User API
 from rest_framework import generics, authentication, permissions, exceptions
 
 from user.models import PasswordRecovery, User
-from .serializers import NewUserSerializer, RetrieveTokenSerializer, SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, AdminUseUserSerializer, UserSerializer
+from .serializers import NewUserSerializer, RetrieveTokenSerializer, SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, AdminUseUserSerializer, UserSerializer, UserSerializerPublic
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from django.contrib.auth import get_user_model
@@ -54,6 +54,22 @@ class ListAllView(generics.ListAPIView):
     queryset = User.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAdminUser]
+
+
+class GetUserDataPublic(generics.RetrieveAPIView):
+    """User can obtain its own data"""
+    serializer_class = UserSerializerPublic
+    queryset = User.objects.all()
+
+    def get_object(self):
+        user = None
+        try:
+            user = get_user_model().objects.get(id=self.kwargs.get('pk'))
+        except:
+            raise exceptions.ValidationError({"detail": "Unable to find user"})
+        if (user.is_superuser or user.is_staff):
+            raise exceptions.ValidationError({"detail": "Unable to find user"})
+        return user
 
 
 class GetUserData(generics.RetrieveAPIView):

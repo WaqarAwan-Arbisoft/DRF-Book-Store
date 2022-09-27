@@ -13,6 +13,8 @@ urlpatterns = [
     path('update/', views.UpdateUserView.as_view(), name='update'),
     path('fetch-all/', views.ListAllView.as_view(), name='list-all'),
     path('fetch-user/', views.GetUserData.as_view(), name='fetch-user-data'),
+    path('fetch-user/<int:pk>/', views.GetUserDataPublic.as_view(),
+         name='fetch-user-data-public'),
     path('recover-password-link/', views.EmailRecoveryLink.as_view(),
          name='recover-password-link'),
     path('recovery/<str:token>/', views.CheckTokenAvailability.as_view(),
