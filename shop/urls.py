@@ -25,5 +25,19 @@ urlpatterns = [
          name='purchase-from-stock'),
     path('fetch-orders/', views.FetchOrdersView.as_view(), name='fetch-orders'),
     path('fetch-order-detail/<int:pk>/', views.FetchOrderDetail.as_view(),
-         name='fetch-order-detail')
+         name='fetch-order-detail'),
+    path('add-to-favorite/<int:bookId>/',
+         views.AddToFavoriteView.as_view(), name='add-to-favorite'),
+    path('fetch-favorites/', views.FetchFavoritesView.as_view(),
+         name='fetch-favorites'),
+    path('is-favorite/<int:bookId>/',
+         views.CheckIsFavoriteView.as_view(), name='is-favorite'),
+    path('remove-favorite/<int:bookId>/',
+         views.RemoveFavorite.as_view(), name='remove-favorite'),
+    path('like-book/<int:bookId>/', views.LikeBookView.as_view(), name='like-book'),
+    path('is-liked/<int:bookId>/',
+         views.CheckIfLikedView.as_view(), name='is-liked'),
+    path('remove-like/<int:bookId>/',
+         views.RemoveLikeView.as_view(), name='remove-like')
+
 ]

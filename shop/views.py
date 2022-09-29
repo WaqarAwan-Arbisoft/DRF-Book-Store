@@ -6,13 +6,15 @@ from rest_framework import authentication
 from rest_framework import permissions
 from books.models import Book
 from bookshop.settings import env
-from shop.models import Cart, Item, Order, OrderedItem, Review
-from shop.serializers import CartSerializer, CheckStockSerializer, FetchUserReviewSerializer, GetCartSerializer, GetReviewSerializer, ItemSerializer, OrderItemsSerializer, OrderSerializer, RemoveItemSerializer, UserReviewSerializer
+from shop.models import Cart, Favorite, Item, Like, Order, OrderedItem, Review
+from shop.serializers import CartSerializer, CheckStockSerializer, FavoriteSerializer, FetchFavoriteSerializer, FetchLikeSerializer, FetchUserReviewSerializer, GetCartSerializer, GetReviewSerializer, ItemSerializer, LikeBookSerializer, OrderItemsSerializer, OrderSerializer, RemoveItemSerializer, UserReviewSerializer
 import stripe
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import F
+from django.db.models import Q
+from socialmedia.models import BookFeed, Friendship
 
 
 class AddToCartView(generics.CreateAPIView):
@@ -218,12 +220,29 @@ class AddReviewView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
+        book = None
         try:
             book = Book.objects.get(pk=serializer.validated_data['book'].id)
         except:
             raise exceptions.APIException('No Book found with this ID')
 
-        serializer.save(user=self.request.user)
+        rev = serializer.save(user=self.request.user)
+        friends = Friendship.objects.filter((Q(initiatedBy=self.request.user) | Q(
+            initiatedTowards=self.request.user)), is_accepted=True).values_list('id', flat=True)
+        feed = BookFeed.objects.create(
+            creator=self.request.user, book=book, review=rev)
+        foundFriend = None
+        for friend in friends:
+            try:
+                foundFriend = Friendship.objects.get(
+                    id=friend, initiatedBy=self.request.user)
+                feed.notify.add(foundFriend.initiatedTowards)
+            except:
+                foundFriend = Friendship.objects.get(
+                    id=friend, initiatedTowards=self.request.user)
+                feed.notify.add(foundFriend.initiatedBy)
+
+        feed.save()
 
 
 class GetBookReview(generics.ListAPIView):
@@ -284,3 +303,153 @@ class FetchOrderDetail(generics.ListAPIView):
         if (len(orderedItems) == 0):
             raise exceptions.APIException("No Item exists")
         return orderedItems
+
+
+class AddToFavoriteView(generics.CreateAPIView):
+    """View to add a book to user's favorites"""
+    serializer_class = FavoriteSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        try:
+            book = Book.objects.get(id=self.kwargs['bookId'])
+        except:
+            raise exceptions.ValidationError(
+                {"detail": "No book found with this ID"})
+
+        favorite = Favorite.objects.create(book=book, user=self.request.user)
+
+        friends = Friendship.objects.filter((Q(initiatedBy=self.request.user) | Q(
+            initiatedTowards=self.request.user)), is_accepted=True).values_list('id', flat=True)
+        feed = BookFeed.objects.create(
+            creator=self.request.user, book=book, favorite=favorite)
+        foundFriend = None
+        for friend in friends:
+            try:
+                foundFriend = Friendship.objects.get(
+                    id=friend, initiatedBy=self.request.user)
+                feed.notify.add(foundFriend.initiatedTowards)
+            except:
+                foundFriend = Friendship.objects.get(
+                    id=friend, initiatedTowards=self.request.user)
+                feed.notify.add(foundFriend.initiatedBy)
+
+        feed.save()
+        return favorite
+
+
+class FetchFavoritesView(generics.ListAPIView):
+    """Fetch all the favorites of a user"""
+    serializer_class = FetchFavoriteSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+
+class CheckIsFavoriteView(generics.RetrieveAPIView):
+    """Get if a user has marked the book as favorite"""
+    serializer_class = FetchFavoriteSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        book = None
+        try:
+            book = Book.objects.get(id=self.kwargs.get('bookId'))
+        except:
+            raise exceptions.APIException("No book found with this ID")
+        try:
+            return Favorite.objects.get(book=book, user=self.request.user)
+        except:
+            raise exceptions.APIException("Not marked as favorite")
+
+
+class RemoveFavorite(generics.DestroyAPIView):
+    """Remove a book from favorites"""
+    serializer_class = FetchFavoriteSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        book = None
+        try:
+            book = Book.objects.get(id=self.kwargs.get('bookId'))
+        except:
+            raise exceptions.APIException("No book found with this ID")
+        try:
+            return Favorite.objects.get(book=book, user=self.request.user)
+        except:
+            raise exceptions.APIException("Not marked as favorite")
+
+
+class LikeBookView(generics.CreateAPIView):
+    """Like the book"""
+    serializer_class = LikeBookSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        try:
+            book = Book.objects.get(id=self.kwargs['bookId'])
+        except:
+            raise exceptions.ValidationError(
+                {"detail": "No book found with this ID"})
+
+        like = Like.objects.create(book=book, user=self.request.user)
+
+        friends = Friendship.objects.filter((Q(initiatedBy=self.request.user) | Q(
+            initiatedTowards=self.request.user)), is_accepted=True).values_list('id', flat=True)
+        feed = BookFeed.objects.create(
+            creator=self.request.user, book=book, like=like)
+        foundFriend = None
+        for friend in friends:
+            try:
+                foundFriend = Friendship.objects.get(
+                    id=friend, initiatedBy=self.request.user)
+                feed.notify.add(foundFriend.initiatedTowards)
+            except:
+                foundFriend = Friendship.objects.get(
+                    id=friend, initiatedTowards=self.request.user)
+                feed.notify.add(foundFriend.initiatedBy)
+
+        feed.save()
+        return like
+
+
+class CheckIfLikedView(generics.RetrieveAPIView):
+    """Check if a book is liked"""
+    serializer_class = FetchLikeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        book = None
+        try:
+            book = Book.objects.get(id=self.kwargs.get('bookId'))
+        except:
+            raise exceptions.APIException("No book found with this ID")
+        try:
+            return Like.objects.get(book=book, user=self.request.user)
+        except:
+            raise exceptions.APIException("Not liked.")
+
+
+class RemoveLikeView(generics.DestroyAPIView):
+    """Remove the like from a book"""
+    serializer_class = FetchLikeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        book = None
+        try:
+            book = Book.objects.get(id=self.kwargs.get('bookId'))
+        except:
+            raise exceptions.APIException("No book found with this ID")
+        try:
+            return Like.objects.get(book=book, user=self.request.user)
+        except:
+            raise exceptions.APIException("Not liked.")

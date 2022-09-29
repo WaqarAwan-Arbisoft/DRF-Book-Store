@@ -62,3 +62,15 @@ class OrderedItem(models.Model):
 
     class Meta:
         unique_together = [['order', 'book']]
+
+
+class Favorite(models.Model):
+    """Favorite books marked by the user"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+
+class Like(models.Model):
+    """Books liked by the user"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)

@@ -4,7 +4,7 @@ Serializers for the Shop Models
 from dataclasses import fields
 from rest_framework import serializers
 
-from shop.models import Cart, Item, Order, OrderedItem, Review
+from shop.models import Cart, Favorite, Item, Like, Order, OrderedItem, Review
 from books.serializers import BookSerializer, OrderBookSerializer
 from user.serializers import UserCommentSerializer
 
@@ -86,3 +86,33 @@ class OrderItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderedItem
         fields = ['quantity', 'book']
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Serializer for favorite model"""
+    class Meta:
+        model = Favorite
+        fields = []
+
+
+class FetchFavoriteSerializer(serializers.ModelSerializer):
+    """Serializer for fetching the favorites of a user"""
+    book = BookSerializer()
+
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+
+
+class LikeBookSerializer(serializers.ModelSerializer):
+    """Serializer for liking a book"""
+    class Meta:
+        model = Like
+        fields = []
+
+
+class FetchLikeSerializer(serializers.ModelSerializer):
+    """Serializer for fetching the liked book of a user"""
+    class Meta:
+        model = Like
+        fields = '__all__'
