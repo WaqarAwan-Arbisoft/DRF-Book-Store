@@ -10,6 +10,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
+from rest_framework.filters import SearchFilter
 
 
 class ConfirmEmailView(generics.CreateAPIView):
@@ -50,10 +51,14 @@ class UpdateUserView(generics.UpdateAPIView):
 
 class ListAllView(generics.ListAPIView):
     """List all users(Admin only)"""
-    serializer_class = AdminUseUserSerializer
-    queryset = User.objects.all()
+    serializer_class = UserSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
+
+    def get_queryset(self):
+        return get_user_model().objects.filter(is_staff=False)
 
 
 class GetUserDataPublic(generics.RetrieveAPIView):

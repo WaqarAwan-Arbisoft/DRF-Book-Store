@@ -39,5 +39,4 @@ urlpatterns = [
          views.CheckIfLikedView.as_view(), name='is-liked'),
     path('remove-like/<int:bookId>/',
          views.RemoveLikeView.as_view(), name='remove-like')
-
 ]

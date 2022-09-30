@@ -27,3 +27,11 @@ class OrderBookSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'price', 'author',
                   'noOfPages', 'image']
         read_only_fields = ['id']
+
+
+class FetchTopSerializer(serializers.ModelSerializer):
+    """Serializer to fetch the top books"""
+
+    class Meta:
+        model = Book
+        fields = '__all__'

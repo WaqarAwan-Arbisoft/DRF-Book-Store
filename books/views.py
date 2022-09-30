@@ -6,9 +6,12 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser
 from rest_framework import generics
 from rest_framework import pagination
+from django.db.models import Count
+
+from shop.models import Like
 
 from .models import Book
-from .serializers import BookDetailSerializer, BookSerializer
+from .serializers import BookDetailSerializer, BookSerializer, FetchTopSerializer
 from rest_framework.filters import SearchFilter
 
 
@@ -42,3 +45,20 @@ class UpdateDestroyView(generics.UpdateAPIView, generics.DestroyAPIView):
     queryset = Book.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAdminUser]
+
+
+class FetchTopBooksView(generics.ListAPIView):
+    """Fetch most liked books"""
+    serializer_class = FetchTopSerializer
+
+    def get_queryset(self):
+        booksRequired = self.kwargs.get('total')
+        mostLiked = Like.objects.values("book").annotate(
+            Count("book")).order_by("-book__count")
+        data = []
+        for liked in mostLiked:
+            data.append(Book.objects.get(id=liked['book']))
+        if (mostLiked.count() >= booksRequired):
+            return data
+        else:
+            return data

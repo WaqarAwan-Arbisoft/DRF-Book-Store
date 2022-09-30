@@ -10,5 +10,7 @@ urlpatterns = [
     path('fetch-all/', views.ListBooksView.as_view(), name='fetch-all'),
     path('fetch-book/<int:pk>', views.GetBookView.as_view(), name='fetch-book'),
     path('updateDestroy/<int:pk>', views.UpdateDestroyView.as_view(),
-         name='update-delete-book')
+         name='update-delete-book'),
+    path('fetch-top-books/<int:total>/',
+         views.FetchTopBooksView.as_view(), name='fetch-top-books')
 ]

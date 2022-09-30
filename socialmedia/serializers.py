@@ -42,6 +42,13 @@ class FriendsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FriendshipSerializer(serializers.ModelSerializer):
+    """Serializer for friendship"""
+    class Meta:
+        model = Friendship
+        fields = []
+
+
 class AcceptRequestSerializer(serializers.ModelSerializer):
     """Serializer to accept the request from a user"""
     class Meta:

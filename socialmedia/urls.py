@@ -11,9 +11,17 @@ urlpatterns = [
     path('fetch-friend-requests/', views.FetchFriendRequestsView.as_view(),
          name='fetch-friend-requests'),
     path('accept-request/', views.AcceptRequestView.as_view(), name='accept-request'),
-    path('remove-request/<int:pk>/',
+    path('remove-request/<int:userId>/',
          views.RemoveRequestView.as_view(), name='remove-request'),
     path('friendship-notifications/', views.FetchFriendshipNotifications.as_view(),
          name='friendship-notifications'),
-    path('fetch-feed/', views.FetchFeedView.as_view(), name='fetch-feed')
+    path('fetch-feed/', views.FetchFeedView.as_view(), name='fetch-feed'),
+    path('is-friend/<int:userId>/',
+         views.CheckIsFriendView.as_view(), name='is-friend'),
+    path('is-request-sent/<int:userId>/',
+         views.CheckIsRequestSentView.as_view(), name='is-request-sent'),
+    path('remove-friend/<int:userId>/',
+         views.RemoveFriendView.as_view(), name='remove-friend'),
+    path('is-initiator/<int:userId>/',
+         views.IsUserInitiatorView.as_view(), name='is-initiator')
 ]
