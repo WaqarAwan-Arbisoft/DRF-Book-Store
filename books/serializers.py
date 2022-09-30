@@ -31,7 +31,6 @@ class OrderBookSerializer(serializers.ModelSerializer):
 
 class FetchTopSerializer(serializers.ModelSerializer):
     """Serializer to fetch the top books"""
-
     class Meta:
         model = Book
         fields = '__all__'

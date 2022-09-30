@@ -11,6 +11,7 @@ from rest_framework.settings import api_settings
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
+from rest_framework import pagination
 
 
 class ConfirmEmailView(generics.CreateAPIView):
@@ -50,12 +51,14 @@ class UpdateUserView(generics.UpdateAPIView):
 
 
 class ListAllView(generics.ListAPIView):
-    """List all users(Admin only)"""
+    """List all users"""
     serializer_class = UserSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [SearchFilter]
     search_fields = ['name']
+    PAGE_SIZE = 5
+    pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
         return get_user_model().objects.filter(is_staff=False)

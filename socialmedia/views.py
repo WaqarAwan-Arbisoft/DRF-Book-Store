@@ -6,6 +6,7 @@ from rest_framework import generics, permissions, authentication, exceptions
 from socialmedia.serializers import AcceptRequestSerializer, AddFriendSerializer, BookFeedSerializer, FriendsSerializer, FriendshipNotificationSerializer, FriendshipSerializer, RejectRequestSerializer
 from .models import BookFeed, Friendship, FriendshipNotification
 from django.contrib.auth import get_user_model
+from rest_framework import pagination
 
 # Create your views here.
 
@@ -62,6 +63,8 @@ class FetchFriendshipNotifications(generics.ListAPIView):
     serializer_class = FriendshipNotificationSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    PAGE_SIZE = 4
+    pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
         return FriendshipNotification.objects.filter(sender=self.request.user)
@@ -72,9 +75,11 @@ class FetchFeedView(generics.ListAPIView):
     serializer_class = BookFeedSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    PAGE_SIZE = 4
+    pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
-        return BookFeed.objects.filter(notify=self.request.user)
+        return BookFeed.objects.filter(notify=self.request.user).order_by('-id')
 
 
 class CheckIsFriendView(generics.RetrieveAPIView):
