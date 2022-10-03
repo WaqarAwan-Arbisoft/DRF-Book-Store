@@ -4,12 +4,11 @@ Views for the User API
 
 from rest_framework import generics, authentication, permissions, exceptions
 
-from user.models import PasswordRecovery, User
-from .serializers import NewUserSerializer, RetrieveTokenSerializer, SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, AdminUseUserSerializer, UserSerializer, UserSerializerPublic
+from user.models import PasswordRecovery
+from .serializers import NewUserSerializer, RetrieveTokenSerializer, SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, UserSerializer, UserSerializerPublic
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from django.contrib.auth import get_user_model
-from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
 from rest_framework import pagination
 
@@ -67,7 +66,7 @@ class ListAllView(generics.ListAPIView):
 class GetUserDataPublic(generics.RetrieveAPIView):
     """User can obtain its own data"""
     serializer_class = UserSerializerPublic
-    queryset = User.objects.all()
+    queryset = get_user_model().objects.all()
 
     def get_object(self):
         user = None
@@ -83,7 +82,7 @@ class GetUserDataPublic(generics.RetrieveAPIView):
 class GetUserData(generics.RetrieveAPIView):
     """User can obtain its own data"""
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    queryset = get_user_model().objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 

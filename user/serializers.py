@@ -5,7 +5,7 @@ import secrets
 from django.utils import timezone
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
-from .models import PasswordRecovery, User, UserCode
+from .models import PasswordRecovery, UserCode
 from rest_framework import exceptions
 from django.core import mail
 import pyotp
@@ -19,10 +19,13 @@ class NewUserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ['email', 'password', 'name', 'image', 'country', 'age']
 
-    def create(self, validated_data):
-        """Sending email and perform the user creation in the system"""
+    def run_validation(self, data=...):
         get_user_model().objects.filter(creation__lt=datetime.now() -
                                         timedelta(minutes=3), tempUser=True).delete()
+        return super().run_validation(data)
+
+    def create(self, validated_data):
+        """Sending email and perform the user creation in the system"""
         if get_user_model().objects.filter(email=validated_data['email']):
             raise exceptions.ValidationError(
                 {"detail": "Another user with this email already exists."})
@@ -40,14 +43,14 @@ class NewUserSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user class"""
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ['id', 'email', 'name', 'image', 'country', 'age', 'is_staff']
 
 
 class UserSerializerPublic(serializers.ModelSerializer):
     """Serializer for the user class"""
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ['id', 'email', 'name', 'image', 'country', 'age']
 
 
@@ -80,7 +83,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
     """Serializer for update user"""
 
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ['password', 'name', 'image', 'country', 'age']
 
         def update(self, instance, validated_data):
@@ -91,13 +94,6 @@ class UpdateUserSerializer(serializers.ModelSerializer):
                 user.set_password(password)
                 user.save()
             return user
-
-
-class AdminUseUserSerializer(serializers.ModelSerializer):
-    """Serializer to be used by admins"""
-    class Meta:
-        model = get_user_model()
-        fields = ['email', 'name', 'image', 'country', 'age']
 
 
 class AuthTokenSerializer(serializers.Serializer):
@@ -131,7 +127,7 @@ class AuthTokenSerializer(serializers.Serializer):
 class UserCommentSerializer(serializers.ModelSerializer):
     """Serializer to be used to display comment"""
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ['id', 'name', 'image', 'country']
 
 
@@ -172,5 +168,5 @@ class UpdatePasswordSerializer(serializers.ModelSerializer):
     """Serializer for updating user password"""
 
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ['email', 'password']

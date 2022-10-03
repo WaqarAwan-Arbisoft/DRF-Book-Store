@@ -50,11 +50,12 @@ class RemoveRequestView(generics.DestroyAPIView):
 
     def get_object(self):
         try:
-            return Friendship.objects.get(initiatedBy=self.kwargs.get('userId'), initiatedTowards=self.request.user, is_accepted=True)
+            return Friendship.objects.get(initiatedBy=self.kwargs.get('userId'), initiatedTowards=self.request.user, is_accepted=False)
         except:
             try:
-                return Friendship.objects.get(initiatedBy=self.request.user, initiatedTowards=self.kwargs.get('userId'), is_accepted=True)
+                return Friendship.objects.get(initiatedBy=self.request.user, initiatedTowards=self.kwargs.get('userId'), is_accepted=False)
             except:
+                print("Users are not friends.")
                 raise exceptions.APIException("Users are not friends.")
 
 

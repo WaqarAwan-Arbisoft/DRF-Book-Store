@@ -2,12 +2,9 @@
 User model file
 """
 
-import random
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
-from django.core.validators import MinLengthValidator
 import pyotp
-import secrets
 
 
 class UserManager(BaseUserManager):
@@ -15,6 +12,7 @@ class UserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **extraFields):
         """Create and return a new user"""
+        print("dsdfds")
         if not email:
             raise ValueError("User must have an email address")
         user = self.model(email=self.normalize_email(email), **extraFields)
