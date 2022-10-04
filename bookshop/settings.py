@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import environ
-from os import getenv
 
 # Initialise environment variables
 env = environ.Env()
@@ -30,11 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-x3t)y!zfg@%1j8f66fmj2qe1y9eeb4%m6g$8)z&#m)nb5oa@#w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = getenv("IS_DEVELOPMENT", True)
+DEBUG = True
 
-ALLOWED_HOSTS = [
-    getenv("APP_HOST", "localhost")
-]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -92,9 +89,17 @@ WSGI_APPLICATION = 'bookshop.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'waqar376',
+        'PASSWORD': 'sql-pass',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -133,11 +138,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static"
-]
 
 MEDIA_ROOT = BASE_DIR / "uploads"
 MEDIA_URL = "/media/"
