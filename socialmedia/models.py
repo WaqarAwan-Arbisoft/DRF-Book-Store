@@ -3,12 +3,12 @@ Models for the social media app
 """
 
 from django.db import models
+
 from django.contrib.auth import get_user_model
 
 from books.models import Book
-from shop.models import Favorite, Like, Review
 
-# Create your models here.
+from shop.models import Favorite, Like, Review
 
 
 class Friendship(models.Model):
@@ -33,7 +33,7 @@ class FriendshipNotification(models.Model):
 class BookFeed(models.Model):
     """Model that contains Notifications data"""
     notify = models.ManyToManyField(
-        get_user_model(), related_name='notificationFor', null=True)
+        get_user_model(), related_name='notificationFor')
     creator = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     review = models.ForeignKey(Review, on_delete=models.CASCADE, null=True)

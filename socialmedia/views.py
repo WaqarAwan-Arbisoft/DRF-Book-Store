@@ -2,13 +2,20 @@
 Views for social interactions
 """
 
-from rest_framework import generics, permissions, authentication, exceptions
-from socialmedia.serializers import AcceptRequestSerializer, AddFriendSerializer, BookFeedSerializer, FriendsSerializer, FriendshipNotificationSerializer, FriendshipSerializer, RejectRequestSerializer
-from .models import BookFeed, Friendship, FriendshipNotification
-from django.contrib.auth import get_user_model
-from rest_framework import pagination
+from rest_framework import (generics, permissions,
+                            authentication, exceptions,
+                            pagination
+                            )
 
-# Create your views here.
+from socialmedia.utils import SocialMediaBusinessLogic
+from socialmedia.serializers import (AcceptRequestSerializer, AddFriendSerializer,
+                                     BookFeedSerializer, FetchFriendshipSerializer, FriendsSerializer,
+                                     FriendshipNotificationSerializer, FriendshipSerializer,
+                                     RejectRequestSerializer
+                                     )
+from .models import (BookFeed, Friendship,
+                     FriendshipNotification
+                     )
 
 
 class AddAsFriendView(generics.CreateAPIView):
@@ -25,7 +32,10 @@ class FetchFriendRequestsView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Friendship.objects.filter(initiatedTowards=self.request.user, is_accepted=False)
+        return Friendship.objects.filter(
+            initiatedTowards=self.request.user,
+            is_accepted=False
+        )
 
 
 class AcceptRequestView(generics.UpdateAPIView):
@@ -37,7 +47,10 @@ class AcceptRequestView(generics.UpdateAPIView):
 
     def get_object(self):
         try:
-            return Friendship.objects.get(initiatedBy=self.request.data['initiatedBy'], initiatedTowards=self.request.user)
+            return Friendship.objects.get(
+                initiatedBy=self.request.data['initiatedBy'],
+                initiatedTowards=self.request.user
+            )
         except:
             raise exceptions.APIException("An error occurred.")
 
@@ -49,14 +62,10 @@ class RemoveRequestView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        try:
-            return Friendship.objects.get(initiatedBy=self.kwargs.get('userId'), initiatedTowards=self.request.user, is_accepted=False)
-        except:
-            try:
-                return Friendship.objects.get(initiatedBy=self.request.user, initiatedTowards=self.kwargs.get('userId'), is_accepted=False)
-            except:
-                print("Users are not friends.")
-                raise exceptions.APIException("Users are not friends.")
+        return SocialMediaBusinessLogic.return_if_request_sent(
+            user=self.request.user,
+            otherUser=self.kwargs.get('userId'),
+            errMsg="An error occurred.")
 
 
 class FetchFriendshipNotifications(generics.ListAPIView):
@@ -83,38 +92,6 @@ class FetchFeedView(generics.ListAPIView):
         return BookFeed.objects.filter(notify=self.request.user).order_by('-id')
 
 
-class CheckIsFriendView(generics.RetrieveAPIView):
-    """Check if a user is friend"""
-    serializer_class = FriendsSerializer
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        try:
-            return Friendship.objects.get(initiatedBy=self.kwargs.get('userId'), initiatedTowards=self.request.user, is_accepted=True)
-        except:
-            try:
-                return Friendship.objects.get(initiatedBy=self.request.user, initiatedTowards=self.kwargs.get('userId'), is_accepted=True)
-            except:
-                raise exceptions.APIException("Users are not friends.")
-
-
-class CheckIsRequestSentView(generics.RetrieveAPIView):
-    """Check if the request is sent"""
-    serializer_class = FriendsSerializer
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        try:
-            return Friendship.objects.get(initiatedBy=self.kwargs.get('userId'), initiatedTowards=self.request.user, is_accepted=False)
-        except:
-            try:
-                return Friendship.objects.get(initiatedBy=self.request.user, initiatedTowards=self.kwargs.get('userId'), is_accepted=False)
-            except:
-                raise exceptions.APIException("Request not sent.")
-
-
 class RemoveFriendView(generics.DestroyAPIView):
     """Remove friend from the friendship"""
     serializer_class = FriendshipSerializer
@@ -122,24 +99,19 @@ class RemoveFriendView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-
-        try:
-            return Friendship.objects.get(initiatedBy=self.kwargs.get('userId'), initiatedTowards=self.request.user, is_accepted=True)
-        except:
-            try:
-                return Friendship.objects.get(initiatedBy=self.request.user, initiatedTowards=self.kwargs.get('userId'), is_accepted=True)
-            except:
-                raise exceptions.APIException("Users are not friends.")
+        return SocialMediaBusinessLogic.return_if_friends(
+            user=self.request.user,
+            otherUser=self.kwargs.get('userId'),
+            errMsg="Users are not friends.")
 
 
-class IsUserInitiatorView(generics.RetrieveAPIView):
-    """Is User the initiator of friendship"""
-    serializer_class = FriendshipSerializer
+class FetchFriendshipView(generics.RetrieveAPIView):
+    serializer_class = FetchFriendshipSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        try:
-            return Friendship.objects.get(initiatedBy=self.request.user, initiatedTowards=self.kwargs.get('userId'))
-        except:
-            raise exceptions.APIException("Users is not an initiator.")
+        return SocialMediaBusinessLogic.check_if_friendship_exists(
+            user=self.request.user,
+            otherUser=self.kwargs.get('userId'),
+            errMsg="Users are not friends.")

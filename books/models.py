@@ -6,9 +6,7 @@ from django.db import models
 
 class Book(models.Model):
     """Book in the system"""
-    name = models.CharField(max_length=150, blank=False, unique=True, error_messages={
-        'required': "Please provide book name"
-    })
+    name = models.CharField(max_length=150, blank=False, unique=True)
     author = models.CharField(max_length=150)
     publishDate = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True)

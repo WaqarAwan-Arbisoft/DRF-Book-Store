@@ -16,7 +16,8 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal Information', {'fields': ('name',)}),
         ('Permissions', {
-         'fields': ('is_active', 'is_staff', 'is_superuser', )}),
+         'fields': ('is_active', 'is_staff',
+                    'is_superuser', )}),
         ('Important Dates', {'fields': ('last_login',)}),
     )
     readonly_fields = ['last_login']
@@ -24,12 +25,8 @@ class UserAdmin(BaseUserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': (
-                'email',
-                'password1',
-                'password2',
-                'name',
-                'is_active',
-                'is_staff',
+                'email', 'password1', 'password2',
+                'name', 'is_active', 'is_staff',
                 'is_superuser',
             ),
         }),

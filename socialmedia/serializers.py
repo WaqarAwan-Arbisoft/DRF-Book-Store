@@ -3,13 +3,11 @@ Serializers for the social interactions of the users
 """
 
 from rest_framework import serializers, exceptions
+
 from books.serializers import BookSerializer
 from shop.serializers import UserReviewSerializer
-
 from user.serializers import UserSerializerPublic
 from .models import BookFeed, Friendship, FriendshipNotification
-from django.db.models import Q
-from django.contrib.auth import get_user_model
 
 
 class AddFriendSerializer(serializers.ModelSerializer):
@@ -22,14 +20,20 @@ class AddFriendSerializer(serializers.ModelSerializer):
         """Create and return a new friend object"""
         try:
             Friendship.objects.get(
-                initiatedBy=self.context['request'].user, initiatedTowards=validated_data.get('initiatedTowards'))
+                initiatedBy=self.context['request'].user,
+                initiatedTowards=validated_data.get('initiatedTowards')
+            )
         except:
             try:
                 Friendship.objects.get(
-                    initiatedBy=validated_data.get('initiatedTowards'), initiatedTowards=self.context['request'].user)
+                    initiatedBy=validated_data.get('initiatedTowards'),
+                    initiatedTowards=self.context['request'].user
+                )
             except:
                 return Friendship.objects.create(
-                    initiatedBy=self.context['request'].user, initiatedTowards=validated_data.get('initiatedTowards'))
+                    initiatedBy=self.context['request'].user,
+                    initiatedTowards=validated_data.get('initiatedTowards')
+                )
         raise exceptions.APIException("Request already sent")
 
 
@@ -59,7 +63,9 @@ class AcceptRequestSerializer(serializers.ModelSerializer):
         instance.is_accepted = True
         instance.save()
         FriendshipNotification.objects.create(
-            sender=instance.initiatedBy, receiver=self.context['request'].user)
+            sender=instance.initiatedBy,
+            receiver=self.context['request'].user
+        )
         return instance
 
 
@@ -87,4 +93,14 @@ class BookFeedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BookFeed
+        fields = '__all__'
+
+
+class FetchFriendshipSerializer(serializers.ModelSerializer):
+    """Serializer to fetch friendship between users"""
+    initiatedBy = UserSerializerPublic()
+    initiatedTowards = UserSerializerPublic()
+
+    class Meta:
+        model = Friendship
         fields = '__all__'

@@ -1,26 +1,40 @@
 """
 Views for the User API
 """
-
-from rest_framework import generics, authentication, permissions, exceptions
-
-from user.models import PasswordRecovery
-from .serializers import NewUserSerializer, RetrieveTokenSerializer, SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer, UserCodeSerializer, AuthTokenSerializer, UpdateUserSerializer, UserSerializer, UserSerializerPublic
+from rest_framework import generics, authentication, permissions, exceptions, pagination
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
-from rest_framework import pagination
+
+from user.models import PasswordRecovery
+from .serializers import (NewUserSerializer, RetrieveTokenSerializer,
+                          SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer,
+                          UserCodeSerializer, AuthTokenSerializer,
+                          UpdateUserSerializer, UserSerializer,
+                          UserSerializerPublic)
 
 
 class ConfirmEmailView(generics.CreateAPIView):
-    """Create a temporary user"""
+    """
+    View for creating a temporary user and sending email for confirmation.
+    """
     serializer_class = NewUserSerializer
 
 
-class CompleteRegistration(generics.CreateAPIView):
+class CompleteRegistration(generics.UpdateAPIView):
     """Create a new user in the system"""
     serializer_class = UserCodeSerializer
+
+    def get_object(self):
+        try:
+            return get_user_model().objects.get(
+                user_code=self.request.data['user_code'],
+                tempUser=True
+            )
+        except:
+            raise exceptions.ValidationError(
+                {'detail': 'Invalid OTP entered.'})
 
 
 class CreateTokenView(ObtainAuthToken):
@@ -73,9 +87,9 @@ class GetUserDataPublic(generics.RetrieveAPIView):
         try:
             user = get_user_model().objects.get(id=self.kwargs.get('pk'))
         except:
-            raise exceptions.ValidationError({"detail": "Unable to find user"})
+            raise exceptions.ValidationError({'detail': 'Unable to find user'})
         if (user.is_superuser or user.is_staff):
-            raise exceptions.ValidationError({"detail": "Unable to find user"})
+            raise exceptions.ValidationError({'detail': 'Unable to find user'})
         return user
 
 
@@ -92,7 +106,7 @@ class GetUserData(generics.RetrieveAPIView):
         try:
             userData = self.queryset.get(pk=self.request.user.pk)
         except:
-            raise exceptions.ValidationError({"detail": "Unable to find user"})
+            raise exceptions.ValidationError({'detail': 'Unable to find user'})
         return userData
 
 
@@ -111,7 +125,7 @@ class CheckTokenAvailability(generics.RetrieveAPIView):
             token = PasswordRecovery.objects.get(
                 user_token=self.kwargs.get('token'))
         except:
-            raise exceptions.ValidationError({"detail": "Invalid Token."})
+            raise exceptions.ValidationError({'detail': 'Invalid Token.'})
         return token
 
 
@@ -122,11 +136,3 @@ class UpdateRecoveredPasswordView(generics.UpdateAPIView):
 
     def get_object(self):
         return get_user_model().objects.get(email=self.request.data['email'])
-
-    def perform_update(self, serializer):
-        PasswordRecovery.objects.filter(
-            email=serializer.validated_data['email']).delete()
-        user = self.get_object()
-        user.set_password(serializer.validated_data['password'])
-        user.save()
-        return user
