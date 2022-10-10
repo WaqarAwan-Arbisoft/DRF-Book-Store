@@ -3,11 +3,9 @@ Models for the social media app
 """
 
 from django.db import models
-
 from django.contrib.auth import get_user_model
 
 from books.models import Book
-
 from shop.models import Favorite, Like, Review
 
 

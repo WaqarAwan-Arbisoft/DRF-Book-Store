@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255, blank=False)
     image = models.ImageField(
         upload_to='images',
-        default='images/DEFAULT_PROFILE_IMAGE_BACKEND_UPLOADED.png'
+        null=True
     )
     age = models.IntegerField(default=18)
     country = models.CharField(max_length=50, default='Pakistan')

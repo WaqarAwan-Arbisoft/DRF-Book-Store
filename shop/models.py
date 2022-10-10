@@ -1,11 +1,13 @@
 """
 Models for the Shop app
 """
+
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from books.models import Book
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+from books.models import Book
 
 
 class Cart(models.Model):
@@ -40,6 +42,9 @@ class Review(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     creation = models.DateField(auto_now_add=True)
 
+    class Meta:
+        unique_together = [['book', 'user']]
+
 
 class Order(models.Model):
     """Orders initiated by the users"""
@@ -69,8 +74,21 @@ class Favorite(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = [['book', 'user']]
+
 
 class Like(models.Model):
     """Books liked by the user"""
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = [['book', 'user']]
+
+
+class StripePayment(models.Model):
+    """Model for string payment data"""
+    email = models.EmailField(max_length=255, blank=False)
+    amount = models.IntegerField(blank=False)
+    payment_method_id = models.CharField(max_length=150, blank=False)

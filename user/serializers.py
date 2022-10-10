@@ -5,7 +5,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 
 from django.contrib.auth import get_user_model, authenticate
-from rest_framework import serializers, exceptions
+from rest_framework import serializers, exceptions, status
 
 from .models import PasswordRecovery
 from .utils import UserAppBusinessLogic
@@ -33,7 +33,7 @@ class NewUserSerializer(serializers.ModelSerializer):
         if get_user_model().objects.filter(email=validated_data['email']):
             raise exceptions.ValidationError(
                 {'detail': 'Another user with this email already exists.'})
-        code = UserAppBusinessLogic.send_mail(email=validated_data['email'])
+        code = UserAppBusinessLogic().send_mail(email=validated_data['email'])
         return get_user_model().objects.create_user(**validated_data, user_code=code)
 
 
@@ -111,8 +111,22 @@ class AuthTokenSerializer(serializers.Serializer):
             password=password
         )
         if not user:
-            raise serializers.ValidationError(
-                'Unable to authenticate with the provided credentials', code='authorization')
+            #! Remove such Exception
+            # raise exceptions.ValidationError(
+            #     detail='Unable to authenticate with the provided credentials',
+            #     code='forbidden'
+            # )
+
+            # raise exceptions.ValidationError(
+            #     detail='Unable to authenticate with the provided credentials',
+            #     code='forbidden'
+            # )
+
+            # TODO: Use this one. Custom made exception that will return the code and msg as 'detail' key
+            raise Exception(
+                'Unable to authenticate with the provided credentials',
+                status.HTTP_406_NOT_ACCEPTABLE
+            )
         attrs['user'] = user
         return attrs
 
@@ -142,7 +156,7 @@ class SetUpdatePasswordTokenSerializer(serializers.ModelSerializer):
             raise exceptions.ValidationError(
                 {'detail': 'A recovery email has already been sent to you.'})
 
-        token = UserAppBusinessLogic.send_recovery_link(
+        token = UserAppBusinessLogic().send_recovery_link(
             validated_data['email']
         )
         return PasswordRecovery.objects.create(

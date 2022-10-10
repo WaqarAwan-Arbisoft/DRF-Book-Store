@@ -9,9 +9,9 @@ from rest_framework import (generics, permissions,
 
 from socialmedia.utils import SocialMediaBusinessLogic
 from socialmedia.serializers import (AcceptRequestSerializer, AddFriendSerializer,
-                                     BookFeedSerializer, FetchFriendshipSerializer, FriendsSerializer,
-                                     FriendshipNotificationSerializer, FriendshipSerializer,
-                                     RejectRequestSerializer
+                                     BookFeedSerializer, FetchFriendshipSerializer,
+                                     FriendsSerializer, FriendshipNotificationSerializer,
+                                     FriendshipSerializer, RejectRequestSerializer
                                      )
 from .models import (BookFeed, Friendship,
                      FriendshipNotification
@@ -111,7 +111,7 @@ class FetchFriendshipView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return SocialMediaBusinessLogic.check_if_friendship_exists(
+        return SocialMediaBusinessLogic().check_if_friendship_exists(
             user=self.request.user,
             otherUser=self.kwargs.get('userId'),
             errMsg="Users are not friends.")

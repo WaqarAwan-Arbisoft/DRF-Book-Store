@@ -10,7 +10,7 @@ from socialmedia.models import Friendship
 class SocialMediaBusinessLogic():
     """Defines the business login for Social Media App"""
 
-    def return_if_friends(user, otherUser, errMsg):
+    def return_if_friends(self, user, otherUser, errMsg):
         """Check if friends then return"""
         try:
             return Friendship.objects.get(
@@ -28,7 +28,7 @@ class SocialMediaBusinessLogic():
             except:
                 raise exceptions.APIException(errMsg)
 
-    def return_if_request_sent(user, otherUser, errMsg):
+    def return_if_request_sent(self, user, otherUser, errMsg):
         """Check if request sent then return"""
         try:
             return Friendship.objects.get(
@@ -46,7 +46,7 @@ class SocialMediaBusinessLogic():
             except:
                 raise exceptions.APIException(errMsg)
 
-    def check_if_friendship_exists(user, otherUser, errMsg):
+    def check_if_friendship_exists(self, user, otherUser, errMsg):
         """Check if friends exists and return"""
         try:
             return Friendship.objects.get(

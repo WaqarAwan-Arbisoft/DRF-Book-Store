@@ -12,7 +12,7 @@ from bookshop.settings import env
 class UserAppBusinessLogic():
     """Defines the business login for User App"""
 
-    def send_mail(email):
+    def send_mail(self, email):
         """Send the email to the user"""
         totp = pyotp.TOTP('base32secret3232')
         code = totp.now()
@@ -24,7 +24,7 @@ class UserAppBusinessLogic():
             ).send()
         return code
 
-    def send_recovery_link(email):
+    def send_recovery_link(self, email):
         """Send a recovery link to the email"""
         token = secrets.token_hex(16)
         with mail.get_connection() as connection:
