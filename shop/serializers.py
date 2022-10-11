@@ -99,8 +99,6 @@ class CheckStockSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Check the items and stock"""
         for item in validated_data['items']:
-            print(item['book'].stock)
-            print(item['quantity'])
             if (item['book'].stock < item['quantity']):
                 raise exceptions.ValidationError(
                     f"Not enough quantity available for {item['book'].name}. Only {item['book'].stock} is available.")

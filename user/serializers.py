@@ -122,7 +122,9 @@ class AuthTokenSerializer(serializers.Serializer):
             password=password
         )
         if not user:
-            raise Exception("sdfdsf")
+            raise exceptions.ValidationError(
+                'Unable to authenticate with the provided credentials.'
+            )
         attrs['user'] = user
         return attrs
 
