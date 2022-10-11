@@ -125,26 +125,11 @@ class AddReviewView(generics.CreateAPIView):
         try:
             book = Book.objects.get(pk=serializer.validated_data['book'].id)
         except:
-            raise exceptions.APIException('No Book found with this ID')
+            raise exceptions.NotFound('No Book found with this ID')
 
         rev = serializer.save(user=self.request.user)
         friends = Friendship.objects.filter((Q(initiatedBy=self.request.user) | Q(
             initiatedTowards=self.request.user)), is_accepted=True).values_list('id', flat=True)
-
-        # feed = BookFeed.objects.create(
-        #     creator=self.request.user, book=book, review=rev)
-        # foundFriend = None
-        # for friend in friends:
-        #     try:
-        #         foundFriend = Friendship.objects.get(
-        #             id=friend, initiatedBy=self.request.user)
-        #         feed.notify.add(foundFriend.initiatedTowards)
-        #     except:
-        #         foundFriend = Friendship.objects.get(
-        #             id=friend, initiatedTowards=self.request.user)
-        #         feed.notify.add(foundFriend.initiatedBy)
-
-        # feed.save()
 
 
 class GetBookReview(generics.ListAPIView):
@@ -198,7 +183,7 @@ class FetchOrderDetail(generics.ListAPIView):
             order__owner=self.request.user
         )
         if (len(orderedItems) == 0):
-            raise exceptions.ValidationError({'detail': 'No Item exists'})
+            raise exceptions.ValidationError('No Item exists')
         return orderedItems
 
 
@@ -230,11 +215,11 @@ class CheckIsFavoriteView(generics.RetrieveAPIView):
         try:
             book = Book.objects.get(id=self.kwargs.get('bookId'))
         except:
-            raise exceptions.APIException("No book found with this ID")
+            raise exceptions.NotFound("No book found with this ID")
         try:
             return Favorite.objects.get(book=book, user=self.request.user)
         except:
-            raise exceptions.APIException("Not marked as favorite")
+            raise exceptions.NotFound("Not marked as favorite")
 
 
 class RemoveFavorite(generics.DestroyAPIView):
@@ -248,11 +233,11 @@ class RemoveFavorite(generics.DestroyAPIView):
         try:
             book = Book.objects.get(id=self.kwargs.get('bookId'))
         except:
-            raise exceptions.APIException("No book found with this ID")
+            raise exceptions.NotFound("No book found with this ID")
         try:
             return Favorite.objects.get(book=book, user=self.request.user)
         except:
-            raise exceptions.APIException("Not marked as favorite")
+            raise exceptions.NotFound("Not marked as favorite")
 
 
 class LikeBookView(generics.CreateAPIView):
@@ -273,11 +258,11 @@ class CheckIfLikedView(generics.RetrieveAPIView):
         try:
             book = Book.objects.get(id=self.kwargs.get('bookId'))
         except:
-            raise exceptions.APIException("No book found with this ID")
+            raise exceptions.NotFound('No book found with this ID')
         try:
             return Like.objects.get(book=book, user=self.request.user)
         except:
-            raise exceptions.APIException("Not liked.")
+            raise exceptions.ValidationError('Not liked.')
 
 
 class RemoveLikeView(generics.DestroyAPIView):
@@ -291,8 +276,8 @@ class RemoveLikeView(generics.DestroyAPIView):
         try:
             book = Book.objects.get(id=self.kwargs.get('bookId'))
         except:
-            raise exceptions.APIException("No book found with this ID")
+            raise exceptions.NotFound('No book found with this ID')
         try:
             return Like.objects.get(book=book, user=self.request.user)
         except:
-            raise exceptions.APIException("Not liked.")
+            raise exceptions.ValidationError('Not liked.')

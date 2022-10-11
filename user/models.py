@@ -28,7 +28,9 @@ class UserManager(BaseUserManager):
                          password):
         """Create and return a new superuser"""
         user = self.create_user(
-            email, password, user_code=pyotp.TOTP('base32secret3232').now())
+            email, password,
+            user_code=pyotp.TOTP('base32secret3232').now()
+        )
         user.is_staff = True
         user.is_superuser = True
         user.name = 'admin'
@@ -51,7 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     creation = models.DateTimeField(auto_now_add=True)
-    user_code = models.IntegerField(unique=True, blank=True)
+    user_code = models.IntegerField(blank=True)
     tempUser = models.BooleanField(default=True)
 
     objects = UserManager()

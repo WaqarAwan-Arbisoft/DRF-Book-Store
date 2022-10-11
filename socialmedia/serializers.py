@@ -34,8 +34,7 @@ class AddFriendSerializer(serializers.ModelSerializer):
                     initiatedBy=self.context['request'].user,
                     initiatedTowards=validated_data.get('initiatedTowards')
                 )
-        #! Change the response
-        raise exceptions.APIException("Request already sent")
+        raise exceptions.MethodNotAllowed("Request already sent")
 
 
 class FriendsSerializer(serializers.ModelSerializer):

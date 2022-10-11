@@ -26,7 +26,7 @@ class SocialMediaBusinessLogic():
                     is_accepted=True
                 )
             except:
-                raise exceptions.APIException(errMsg)
+                raise exceptions.ValidationError(errMsg)
 
     def return_if_request_sent(self, user, otherUser, errMsg):
         """Check if request sent then return"""
@@ -44,7 +44,7 @@ class SocialMediaBusinessLogic():
                     is_accepted=False
                 )
             except:
-                raise exceptions.APIException(errMsg)
+                raise exceptions.ValidationError(errMsg)
 
     def check_if_friendship_exists(self, user, otherUser, errMsg):
         """Check if friends exists and return"""
@@ -60,4 +60,4 @@ class SocialMediaBusinessLogic():
                     initiatedTowards__id=otherUser
                 )
             except:
-                raise exceptions.APIException(errMsg)
+                raise exceptions.ValidationError(errMsg)

@@ -23,11 +23,11 @@ class ShopBusinessLogic(object):
         book = None
         cart, created = Cart.objects.get_or_create(owner=self.request.user)
         if not cart:
-            raise exceptions.APIException('An error occurred.')
+            raise exceptions.ParseError('An error occurred.')
         try:
             book = Book.objects.get(pk=bookId)
         except:
-            raise exceptions.APIException('No Book found with this ID')
+            raise exceptions.NotFound('No Book found with this ID')
 
         return (cart, book)
 
@@ -79,7 +79,7 @@ class ShopBusinessLogic(object):
             cart.totalPrice = cart.totalPrice+book.price*newQuantity
             cart.save()
         except:
-            raise exceptions.APIException('An error occurred.')
+            raise exceptions.ValidationError('An error occurred.')
 
     def notify_friends(self, book, review=None, like=None, favorite=None):
         """Notify friends about an event"""

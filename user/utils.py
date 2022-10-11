@@ -18,8 +18,10 @@ class UserAppBusinessLogic():
         code = totp.now()
         with mail.get_connection() as connection:
             mail.EmailMessage(
-                'Email Verification', f'<h1>Your verification code for registration is: ${code}</h1>', env(
-                    'ADMIN_EMAIL'), [email],
+                'Email Verification',
+                f'<h1>Your verification code for registration is: ${code}</h1>',
+                env('ADMIN_EMAIL'),
+                [email],
                 connection=connection
             ).send()
         return code

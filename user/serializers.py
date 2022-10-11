@@ -12,7 +12,9 @@ from .utils import UserAppBusinessLogic
 
 
 class NewUserSerializer(serializers.ModelSerializer):
-    """Serializer for a temporary user"""
+    """
+    Serializer for a temporary user
+    """
     class Meta:
         model = get_user_model()
         fields = [
@@ -28,11 +30,19 @@ class NewUserSerializer(serializers.ModelSerializer):
         ).delete()
         return super().run_validation(data)
 
+    def validate_password(self, value):
+        if len(value) < 5:
+            raise exceptions.ValidationError(
+                detail='Password should be at least 5 characters long.')
+
     def create(self, validated_data):
-        """Sending email and perform the user creation in the system"""
+        """
+        Sending email and perform the user creation in the system
+        """
         if get_user_model().objects.filter(email=validated_data['email']):
             raise exceptions.ValidationError(
-                {'detail': 'Another user with this email already exists.'})
+                'Another user with this email already exists.'
+            )
         code = UserAppBusinessLogic().send_mail(email=validated_data['email'])
         return get_user_model().objects.create_user(**validated_data, user_code=code)
 
@@ -69,8 +79,9 @@ class UserCodeSerializer(serializers.ModelSerializer):
         if (timezone.now() >
                 (instance.creation+timedelta(minutes=3)) and instance.tempUser):
             instance.delete()
-            raise serializers.ValidationError(
-                {'detail': 'Your verification code has been expired. Please try again!'})
+            raise exceptions.ValidationError(
+                'Your verification code has been expired. Please try again!'
+            )
         instance.tempUser = False
         instance.user_code = -1*instance.user_code
         instance.save()
@@ -111,22 +122,7 @@ class AuthTokenSerializer(serializers.Serializer):
             password=password
         )
         if not user:
-            #! Remove such Exception
-            # raise exceptions.ValidationError(
-            #     detail='Unable to authenticate with the provided credentials',
-            #     code='forbidden'
-            # )
-
-            # raise exceptions.ValidationError(
-            #     detail='Unable to authenticate with the provided credentials',
-            #     code='forbidden'
-            # )
-
-            # TODO: Use this one. Custom made exception that will return the code and msg as 'detail' key
-            raise Exception(
-                'Unable to authenticate with the provided credentials',
-                status.HTTP_406_NOT_ACCEPTABLE
-            )
+            raise Exception("sdfdsf")
         attrs['user'] = user
         return attrs
 
@@ -151,10 +147,12 @@ class SetUpdatePasswordTokenSerializer(serializers.ModelSerializer):
         """Create and send link to the user"""
         if not get_user_model().objects.filter(email=validated_data['email']):
             raise exceptions.ValidationError(
-                {'detail': 'No User exists in the system with this email.'})
+                'No User exists in the system with this email.'
+            )
         if PasswordRecovery.objects.filter(email=validated_data['email']):
             raise exceptions.ValidationError(
-                {'detail': 'A recovery email has already been sent to you.'})
+                'A recovery email has already been sent to you.'
+            )
 
         token = UserAppBusinessLogic().send_recovery_link(
             validated_data['email']

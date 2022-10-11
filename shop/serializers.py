@@ -35,9 +35,9 @@ class ItemSerializer(serializers.ModelSerializer):
             bookId=validated_data['book'].id
         )
         if (book.stock == 0):
-            raise exceptions.APIException('Book is out of stock')
+            raise exceptions.ValidationError('Book is out of stock')
         if (book.stock < validated_data['quantity']):
-            raise exceptions.APIException(
+            raise exceptions.ValidationError(
                 'Not enough quantity available at the stock.')
         return ShopBusinessLogic(self.context['request']).add_to_cart(
             book=book, cart=cart,
@@ -53,7 +53,7 @@ class ItemSerializer(serializers.ModelSerializer):
                 quantity=validated_data['quantity']
             )
         except:
-            raise exceptions.APIException('An error occurred.')
+            raise exceptions.ValidationError('An error occurred.')
         return super().update(instance, validated_data)
 
 
@@ -99,10 +99,12 @@ class CheckStockSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Check the items and stock"""
         for item in validated_data['items']:
+            print(item['book'].stock)
+            print(item['quantity'])
             if (item['book'].stock < item['quantity']):
-                raise exceptions.APIException(
-                    f"Not enough quantity available for {item['book'].name}. You selected {item['quantity']} and {item['book'].stock} is available.")
-        return super().create(validated_data)
+                raise exceptions.ValidationError(
+                    f"Not enough quantity available for {item['book'].name}. Only {item['book'].stock} is available.")
+        return validated_data
 
 
 class UserReviewSerializer(serializers.ModelSerializer):
@@ -158,13 +160,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 id=self.context.get('view').kwargs.get('bookId'))
         except:
             raise exceptions.ValidationError(
-                {"detail": "No book found with this ID"})
+                'No book found with this ID'
+            )
         try:
             favorite = Favorite.objects.create(book=book,
                                                user=self.context['request'].user)
         except:
             raise exceptions.ValidationError(
-                {"detail": "Already added to favorites."})
+                'Already added to favorites.'
+            )
 
         ShopBusinessLogic(self.context['request']).notify_friends(
             book=book,
@@ -195,14 +199,14 @@ class LikeBookSerializer(serializers.ModelSerializer):
                 id=self.context.get('view').kwargs.get('bookId'))
         except:
             raise exceptions.ValidationError(
-                {'detail': 'No book found with this ID'}
+                'No book found with this ID'
             )
         try:
             like = Like.objects.create(
                 book=book, user=self.context['request'].user)
         except:
             raise exceptions.ValidationError(
-                {'detail': 'Already liked.'}
+                'Already liked.'
             )
         ShopBusinessLogic(self.context['request']).notify_friends(
             book=book,
@@ -232,7 +236,7 @@ class StripePaymentSerializer(serializers.ModelSerializer):
         try:
             cart = Cart.objects.get(owner=self.context['request'].user)
         except:
-            raise exceptions.APIException(
+            raise exceptions.NotFound(
                 detail="No cart exists for this user")
         customer_data = stripe.Customer.list(email=email).data
         if len(customer_data) == 0:
@@ -251,8 +255,9 @@ class StripePaymentSerializer(serializers.ModelSerializer):
                 confirm=True
             )
         except:
-            exceptions.APIException(
-                detail='Unable to make payment. Please try again later.')
+            exceptions.ValidationError(
+                'Unable to make payment. Please try again later.'
+            )
 
         ShopBusinessLogic(self.context['request']).finalizeOrder(cart)
         return super().create(validated_data)

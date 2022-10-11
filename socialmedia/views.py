@@ -52,7 +52,7 @@ class AcceptRequestView(generics.UpdateAPIView):
                 initiatedTowards=self.request.user
             )
         except:
-            raise exceptions.APIException("An error occurred.")
+            raise exceptions.ValidationError('An error occurred.')
 
 
 class RemoveRequestView(generics.DestroyAPIView):

@@ -25,6 +25,7 @@ class ConfirmEmailView(generics.CreateAPIView):
 class CompleteRegistration(generics.UpdateAPIView):
     """Create a new user in the system"""
     serializer_class = UserCodeSerializer
+    http_method_names = ['patch']
 
     def get_object(self):
         try:
@@ -34,7 +35,8 @@ class CompleteRegistration(generics.UpdateAPIView):
             )
         except:
             raise exceptions.ValidationError(
-                {'detail': 'Invalid OTP entered.'})
+                'Invalid OTP entered.'
+            )
 
 
 class CreateTokenView(ObtainAuthToken):
@@ -87,9 +89,9 @@ class GetUserDataPublic(generics.RetrieveAPIView):
         try:
             user = get_user_model().objects.get(id=self.kwargs.get('pk'))
         except:
-            raise exceptions.ValidationError({'detail': 'Unable to find user'})
+            raise exceptions.ValidationError('Unable to find user')
         if (user.is_superuser or user.is_staff):
-            raise exceptions.ValidationError({'detail': 'Unable to find user'})
+            raise exceptions.ValidationError('Unable to find user')
         return user
 
 
@@ -106,7 +108,7 @@ class GetUserData(generics.RetrieveAPIView):
         try:
             userData = self.queryset.get(pk=self.request.user.pk)
         except:
-            raise exceptions.ValidationError({'detail': 'Unable to find user'})
+            raise exceptions.ValidationError('Unable to find user')
         return userData
 
 
@@ -125,7 +127,7 @@ class CheckTokenAvailability(generics.RetrieveAPIView):
             token = PasswordRecovery.objects.get(
                 user_token=self.kwargs.get('token'))
         except:
-            raise exceptions.ValidationError({'detail': 'Invalid Token.'})
+            raise exceptions.ValidationError('Invalid Token.')
         return token
 
 
