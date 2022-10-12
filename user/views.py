@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
 
 from user.models import PasswordRecovery
-from .serializers import (NewUserSerializer, RetrieveTokenSerializer,
+from .serializers import (GoogleRegisterSerializer, NewUserSerializer, RetrieveTokenSerializer,
                           SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer,
                           UserCodeSerializer, AuthTokenSerializer,
                           UpdateUserSerializer, UserSerializer,
@@ -37,6 +37,13 @@ class CompleteRegistration(generics.UpdateAPIView):
             raise exceptions.ValidationError(
                 'Invalid OTP entered.'
             )
+
+
+class GoogleRegisterView(generics.CreateAPIView):
+    """
+    Register with google
+    """
+    serializer_class = GoogleRegisterSerializer
 
 
 class CreateTokenView(ObtainAuthToken):

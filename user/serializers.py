@@ -47,6 +47,13 @@ class NewUserSerializer(serializers.ModelSerializer):
         return get_user_model().objects.create_user(**validated_data, user_code=code)
 
 
+class GoogleRegisterSerializer(serializers.ModelSerializer):
+    """Serializer for registering with google"""
+    class Meta:
+        model = get_user_model()
+        fields = ['email']
+
+
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user class"""
     class Meta:
