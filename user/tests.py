@@ -2,11 +2,11 @@
 Test the User app features
 """
 
-from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 
 class UserAppTests(APITestCase):
@@ -63,6 +63,10 @@ class UserAppTests(APITestCase):
         assert get_user_model().objects.get().email == user_email
         assert get_user_model().objects.get().tempUser == True
         assert get_user_model().objects.count() == 1
+        # User already exists
+        user_email = 'test_user@gmail.com'
+        response = self.register_temp_user(email=user_email)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_complete_registration(self):
         """

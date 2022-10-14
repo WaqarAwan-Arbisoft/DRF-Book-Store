@@ -53,7 +53,7 @@ class FetchCartItemsView(generics.ListAPIView):
 
 
 class GetDestroyCartView(generics.RetrieveDestroyAPIView):
-    """Fetch cart details"""
+    """Fetch and delete cart of a user"""
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -138,7 +138,7 @@ class GetBookReview(generics.ListAPIView):
     serializer_class = GetReviewSerializer
 
     def get_queryset(self):
-        return Review.objects.filter(book=self.kwargs.get('id')).order_by('-id')
+        return Review.objects.filter(book=self.kwargs.get('bookId')).order_by('-id')
 
 
 class CheckStockView(generics.CreateAPIView):

@@ -62,7 +62,7 @@ class RemoveRequestView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return SocialMediaBusinessLogic.return_if_request_sent(
+        return SocialMediaBusinessLogic().return_if_request_sent(
             user=self.request.user,
             otherUser=self.kwargs.get('userId'),
             errMsg="An error occurred.")
@@ -99,7 +99,7 @@ class RemoveFriendView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return SocialMediaBusinessLogic.return_if_friends(
+        return SocialMediaBusinessLogic().return_if_friends(
             user=self.request.user,
             otherUser=self.kwargs.get('userId'),
             errMsg="Users are not friends.")
