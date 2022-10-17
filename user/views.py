@@ -8,16 +8,18 @@ from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
 
 from user.models import PasswordRecovery
-from .serializers import (GoogleRegisterSerializer, NewUserSerializer, RetrieveTokenSerializer,
-                          SetUpdatePasswordTokenSerializer, UpdatePasswordSerializer,
-                          UserCodeSerializer, AuthTokenSerializer,
-                          UpdateUserSerializer, UserSerializer,
-                          UserSerializerPublic)
+from .serializers import (GoogleRegisterSerializer, NewUserSerializer,
+                          RetrieveTokenSerializer, PasswordRecoverySerializer,
+                          UpdatePasswordSerializer, UserCodeSerializer,
+                          AuthTokenSerializer, UpdateUserSerializer,
+                          UserSerializer,
+                          )
 
 
 class ConfirmEmailView(generics.CreateAPIView):
     """
-    View for creating a temporary user and sending email for confirmation.
+    View for creating a temporary user and sending email 
+    for confirmation.
     """
     serializer_class = NewUserSerializer
 
@@ -86,15 +88,15 @@ class ListAllView(generics.ListAPIView):
         return get_user_model().objects.filter(is_staff=False)
 
 
-class GetUserDataPublic(generics.RetrieveAPIView):
+class GetUserByIdView(generics.RetrieveAPIView):
     """User can obtain its own data"""
-    serializer_class = UserSerializerPublic
+    serializer_class = UserSerializer
     queryset = get_user_model().objects.all()
 
     def get_object(self):
         user = None
         try:
-            user = get_user_model().objects.get(id=self.kwargs.get('pk'))
+            user = get_user_model().objects.get(id=self.kwargs.get('userId'))
         except:
             raise exceptions.ValidationError('Unable to find user')
         if (user.is_superuser or user.is_staff):
@@ -121,7 +123,7 @@ class GetUserData(generics.RetrieveAPIView):
 
 class EmailRecoveryLink(generics.CreateAPIView):
     """Email recovery view to send link to the user"""
-    serializer_class = SetUpdatePasswordTokenSerializer
+    serializer_class = PasswordRecoverySerializer
 
 
 class CheckTokenAvailability(generics.RetrieveAPIView):

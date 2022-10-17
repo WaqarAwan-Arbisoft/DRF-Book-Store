@@ -26,10 +26,15 @@ class UserAppTests(APITestCase):
         url = reverse('confirm-email')
         return self.client.post(url, data, format='json')
 
-    def create_user_and_set_token_credentials(self, data):
+    def create_user_and_set_token_credentials(self, email):
         """
         Create a new permanent user
         """
+        data = {
+            'name': 'Test User',
+            'email': email,
+            'password': '123testing123'
+        }
         user = get_user_model().objects.create_user(
             email=data['email'], password=data['password'],
             name=data['name'], tempUser=False,
@@ -41,10 +46,15 @@ class UserAppTests(APITestCase):
         )
         return user
 
-    def create_user(self, data):
+    def create_user(self, email):
         """
         Create a user in the database
         """
+        data = {
+            'name': 'Test User',
+            'email': email,
+            'password': '123testing123'
+        }
         user = get_user_model().objects.create_user(
             email=data['email'], password=data['password'],
             name=data['name'], tempUser=False,
@@ -88,13 +98,10 @@ class UserAppTests(APITestCase):
         Ensure that user will be allowed to update his/her own profile
         with authorization token.
         """
-        data = {
-            'name': 'Test User',
-            'email': 'test_user1@gmail.com',
-            'password': '123testing123'
-        }
-        self.create_user_and_set_token_credentials(data=data)
-        assert get_user_model().objects.get().name == data['name']
+        user = self.create_user_and_set_token_credentials(
+            email='test_user1@gmail.com'
+        )
+        assert get_user_model().objects.get().name == user.name
         updateData = {
             'name': 'Test User Updated'
         }
@@ -114,12 +121,9 @@ class UserAppTests(APITestCase):
         Ensure that only the authenticated user will be able to
         fetch all the users
         """
-        data = {
-            'name': 'Test User',
-            'email': 'test_user1@gmail.com',
-            'password': '123testing123'
-        }
-        self.create_user_and_set_token_credentials(data=data)
+        self.create_user_and_set_token_credentials(
+            email='test_user1@gmail.com'
+        )
         url = reverse('list-all')
         response = self.client.get(url, format='json')
         assert response.status_code == status.HTTP_200_OK
@@ -134,12 +138,9 @@ class UserAppTests(APITestCase):
         """
         Ensure that the user will be able to fetch his/her own data.
         """
-        data = {
-            'name': 'Test User',
-            'email': 'test_user1@gmail.com',
-            'password': '123testing123'
-        }
-        self.create_user_and_set_token_credentials(data=data)
+        self.create_user_and_set_token_credentials(
+            email='test_user1@gmail.com'
+        )
         url = reverse('fetch-user-data')
         response = self.client.get(url, format='json')
         assert response.status_code == status.HTTP_200_OK
@@ -150,63 +151,33 @@ class UserAppTests(APITestCase):
         response = self.client.patch(url, format='json')
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_fetch_other_profile_data(self):
+    def test_fetch_profile_by_id(self):
         """
-        Ensure that the user will be able to fetch other
-        profiles data but only the public information
+        Ensure that user's profile can be fetched by id
         """
-        data1 = {
-            'name': 'Test User',
-            'email': 'test_user1@gmail.com',
-            'password': '123testing123'
-        }
-        data2 = {
-            'name': 'Test User',
-            'email': 'test_user2@gmail.com',
-            'password': '123testing123'
-        }
-        user1 = self.create_user_and_set_token_credentials(data=data1)
-        user2 = self.create_user(data=data2)
-        url = reverse('fetch-user-data-public', kwargs={'pk': user2.pk})
+        user = self.create_user(email='test_user1@gmail.com')
+        url = reverse('fetch-user-by-id', kwargs={'userId': user.id})
         response = self.client.get(url, format='json')
         assert response.status_code == status.HTTP_200_OK
-        assert user1.email != user2.email
-        """
-        Clearing up credentials
-        """
-        self.client.credentials()
-        response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert user1.email != user2.email
 
     def test_password_recovery_email(self):
         """
         Ensure that the app sends the password recovery mail
         """
-        data = {
-            'name': 'Test User',
-            'email': 'test_user1@gmail.com',
-            'password': '123testing123'
-        }
-        self.create_user(data=data)
+        user = self.create_user(email='test_user1@gmail.com')
         url = reverse('recover-password-link')
         response = self.client.post(
-            url, data={'email': data['email']},
+            url, data={'email': user.email},
             format='json'
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['email'] == data['email']
+        assert response.data['email'] == user.email
 
     def test_update_password_after_recovery(self):
         """
         Ensure that the password gets updated once we recover it
         """
-        data = {
-            'name': 'Test User',
-            'email': 'test_user1@gmail.com',
-            'password': '123testing123'
-        }
-        user = self.create_user(data=data)
+        user = self.create_user(email='test_user1@gmail.com')
         url = reverse('update-password')
         updatedData = {
             'email': user.email,

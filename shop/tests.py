@@ -9,7 +9,7 @@ from rest_framework import status
 from django.urls import reverse
 
 from books.models import Book
-from shop.models import Cart, Item, Review
+from shop.models import Cart, Favorite, Item, Like, Review
 
 
 class ShopAppTests(APITestCase):
@@ -80,6 +80,22 @@ class ShopAppTests(APITestCase):
                                        'quantity': 1}
                                    )
         return cart
+
+    def add_to_favorite(self, book, user):
+        """
+        Add book to user's favorite
+        """
+        favorite, created = Favorite.objects.get_or_create(book=book,
+                                                           user=user)
+        return favorite
+
+    def add_to_like(self, book, user):
+        """
+        Add the book to like.
+        """
+        like, created = Like.objects.get_or_create(book=book,
+                                                   user=user)
+        return like
 
     def fetch_item_from_cart(self, book, cart):
         """
@@ -249,3 +265,142 @@ class ShopAppTests(APITestCase):
         response = self.client.get(url, format='json')
         assert response.status_code == status.HTTP_200_OK
         assert Review.objects.get().id == review.id
+
+    def test_add_to_favorite(self):
+        """
+        Ensure that the user will be able to add book to his/her
+        favorites list.
+        """
+        book = self.create_book(name='test-book')
+        user = self.create_user_and_set_token_credentials(
+            email='test-user@gmail.com'
+        )
+        url = reverse('add-to-favorite', kwargs={'bookId': book.id})
+        response = self.client.post(url, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+        favorite = Favorite.objects.get()
+        assert favorite.book.id == book.id
+        assert favorite.user.id == user.id
+        """
+        Clearing the credentials
+        """
+        self.client.credentials()
+        url = reverse('add-to-favorite', kwargs={'bookId': book.id})
+        response = self.client.post(url, format='json')
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_fetch_favorites(self):
+        """
+        Ensure that the user will be able to fetch his/her
+        favorite books list.
+        """
+        book = self.create_book(name='test-book')
+        user = self.create_user_and_set_token_credentials(
+            email='test-user@gmail.com'
+        )
+        favorite = self.add_to_favorite(book=book, user=user)
+        url = reverse('fetch-favorites')
+        response = self.client.get(url, format='json')
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]['id'] == favorite.id
+        """
+        Clearing the credentials
+        """
+        self.client.credentials()
+        response = self.client.get(url, format='json')
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_is_book_favorite(self):
+        """
+        Ensure that user will be able to check if the book is
+        added to favorite.
+        """
+        book = self.create_book(name='test-book')
+        user = self.create_user_and_set_token_credentials(
+            email='test-user@gmail.com'
+        )
+        url = reverse('is-favorite', kwargs={'bookId': book.id})
+        response = self.client.get(url, format='json')
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        favorite = self.add_to_favorite(book=book, user=user)
+        url = reverse('is-favorite', kwargs={'bookId': book.id})
+        response = self.client.get(url, format='json')
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['id'] == favorite.id
+
+    def test_remove_from_favorite(self):
+        """
+        Ensure that user will be able to remove a book from
+        favorites.
+        """
+        book = self.create_book(name='test-book')
+        user = self.create_user_and_set_token_credentials(
+            email='test-user@gmail.com'
+        )
+        url = reverse('remove-favorite', kwargs={'bookId': book.id})
+        response = self.client.delete(url, format='json')
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        self.add_to_favorite(book=book, user=user)
+        url = reverse('remove-favorite', kwargs={'bookId': book.id})
+        response = self.client.delete(url, format='json')
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    def test_like_book(self):
+        """
+        Ensure that a user will be able to give like to a 
+        book.
+        """
+        user = self.create_user_and_set_token_credentials(
+            email='test-user@gmail.com'
+        )
+        url = reverse('like-book', kwargs={'bookId': 1})
+        response = self.client.post(url, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        book = self.create_book(name='test-book')
+        url = reverse('like-book', kwargs={'bookId': book.id})
+        response = self.client.post(url, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+        like = Like.objects.get()
+        assert like.book.id == book.id
+        assert like.user.id == user.id
+        """
+        Clearing the credentials
+        """
+        self.client.credentials()
+        response = self.client.post(url, format='json')
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_is_book_liked(self):
+        """
+        Ensure if the user has liked the book.
+        """
+        book = self.create_book(name='test-book')
+        user = self.create_user_and_set_token_credentials(
+            email='test-user@gmail.com'
+        )
+        url = reverse('is-liked', kwargs={'bookId': book.id})
+        response = self.client.get(url, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        like = self.add_to_like(book=book, user=user)
+        url = reverse('is-liked', kwargs={'bookId': book.id})
+        response = self.client.get(url, format='json')
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['id'] == like.id
+
+    def test_remove_like(self):
+        """
+        Ensure that user will be able to remove book from 
+        likes list.
+        """
+        book = self.create_book(name='test-book')
+        user = self.create_user_and_set_token_credentials(
+            email='test-user@gmail.com'
+        )
+        url = reverse('remove-like', kwargs={'bookId': book.id})
+        response = self.client.delete(url, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        self.add_to_like(book=book, user=user)
+        url = reverse('remove-like', kwargs={'bookId': book.id})
+        response = self.client.delete(url, format='json')
+        assert response.status_code == status.HTTP_204_NO_CONTENT

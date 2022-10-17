@@ -5,7 +5,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 
 from django.contrib.auth import get_user_model, authenticate
-from rest_framework import serializers, exceptions, status
+from rest_framework import serializers, exceptions
 
 from .models import PasswordRecovery
 from .utils import UserAppBusinessLogic
@@ -33,7 +33,8 @@ class NewUserSerializer(serializers.ModelSerializer):
     def validate_password(self, value):
         if len(value) < 5:
             raise exceptions.ValidationError(
-                detail='Password should be at least 5 characters long.')
+                detail='Password should be at least 5 characters long.'
+            )
 
     def create(self, validated_data):
         """
@@ -62,16 +63,6 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'name',
             'image', 'country', 'age',
             'is_staff'
-        ]
-
-
-class UserSerializerPublic(serializers.ModelSerializer):
-    """Serializer for the user class"""
-    class Meta:
-        model = get_user_model()
-        fields = [
-            'id', 'email', 'name',
-            'image', 'country', 'age'
         ]
 
 
@@ -120,7 +111,10 @@ class AuthTokenSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')
         try:
-            user = get_user_model().objects.get(email=email, password=password)
+            user = get_user_model().objects.get(
+                email=email,
+                password=password
+            )
         except:
             user = None
         user = authenticate(
@@ -132,6 +126,7 @@ class AuthTokenSerializer(serializers.Serializer):
             raise exceptions.ValidationError(
                 'Unable to authenticate with the provided credentials.'
             )
+        print(user)
         attrs['user'] = user
         return attrs
 
@@ -146,7 +141,7 @@ class UserCommentSerializer(serializers.ModelSerializer):
         ]
 
 
-class SetUpdatePasswordTokenSerializer(serializers.ModelSerializer):
+class PasswordRecoverySerializer(serializers.ModelSerializer):
     """Serializer to update the user password"""
     class Meta:
         model = PasswordRecovery

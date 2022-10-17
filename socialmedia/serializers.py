@@ -6,7 +6,7 @@ from rest_framework import serializers, exceptions
 
 from books.serializers import BookSerializer
 from shop.serializers import UserReviewSerializer
-from user.serializers import UserSerializerPublic
+from user.serializers import UserSerializer
 from .models import BookFeed, Friendship, FriendshipNotification
 
 
@@ -39,7 +39,7 @@ class AddFriendSerializer(serializers.ModelSerializer):
 
 class FriendsSerializer(serializers.ModelSerializer):
     """Serializer for Friend model"""
-    initiatedBy = UserSerializerPublic()
+    initiatedBy = UserSerializer()
 
     class Meta:
         model = Friendship
@@ -78,7 +78,7 @@ class RejectRequestSerializer(serializers.ModelSerializer):
 
 class FriendshipNotificationSerializer(serializers.ModelSerializer):
     """Serializer for friendship notifications"""
-    receiver = UserSerializerPublic()
+    receiver = UserSerializer()
 
     class Meta:
         model = FriendshipNotification
@@ -87,7 +87,7 @@ class FriendshipNotificationSerializer(serializers.ModelSerializer):
 
 class BookFeedSerializer(serializers.ModelSerializer):
     """Serializer for Book Feed"""
-    creator = UserSerializerPublic()
+    creator = UserSerializer()
     book = BookSerializer()
     review = UserReviewSerializer()
 
@@ -98,8 +98,8 @@ class BookFeedSerializer(serializers.ModelSerializer):
 
 class FetchFriendshipSerializer(serializers.ModelSerializer):
     """Serializer to fetch friendship between users"""
-    initiatedBy = UserSerializerPublic()
-    initiatedTowards = UserSerializerPublic()
+    initiatedBy = UserSerializer()
+    initiatedTowards = UserSerializer()
 
     class Meta:
         model = Friendship
