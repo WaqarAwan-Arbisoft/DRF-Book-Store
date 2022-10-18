@@ -80,7 +80,7 @@ class ListAllView(generics.ListAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [SearchFilter]
-    search_fields = ['name']
+    search_fields = ['name', 'email']
     PAGE_SIZE = 5
     pagination_class = pagination.LimitOffsetPagination
 

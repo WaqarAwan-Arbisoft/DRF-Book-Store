@@ -34,13 +34,14 @@ class FetchTopBooksView(generics.ListAPIView):
     def get_queryset(self):
         #! Change the query
         booksRequired = self.kwargs.get('total')
-        mostLiked = Like.objects.values().annotate(
+        mostLiked = Like.objects.values('book').annotate(
             Count("book")).order_by("-book__count")[:3]
+
         data = []
         if mostLiked.count() == booksRequired:
             for liked in mostLiked:
-                data.append(Book.objects.get(id=liked['book_id']))
+                data.append(Book.objects.get(id=liked['book']))
         else:
             for liked in mostLiked:
-                data.append(Book.objects.get(id=liked['book_id']))
+                data.append(Book.objects.get(id=liked['book']))
         return data

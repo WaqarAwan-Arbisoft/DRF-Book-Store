@@ -126,7 +126,6 @@ class AuthTokenSerializer(serializers.Serializer):
             raise exceptions.ValidationError(
                 'Unable to authenticate with the provided credentials.'
             )
-        print(user)
         attrs['user'] = user
         return attrs
 
