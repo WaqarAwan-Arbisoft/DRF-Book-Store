@@ -112,6 +112,30 @@ class UserReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['book', 'comment', 'rating']
 
+    def create(self, validated_data):
+        review = None
+        try:
+            book = Book.objects.get(
+                id=validated_data['book'].id)
+        except:
+            raise exceptions.ValidationError(
+                'No book found with this ID'
+            )
+        try:
+            review = Review.objects.create(
+                book=book, user=self.context['request'].user,
+                comment=validated_data['comment'], rating=validated_data['rating']
+            )
+        except:
+            raise exceptions.ValidationError(
+                'Already added to favorites.'
+            )
+
+        ShopBusinessLogic(self.context['request']).notify_friends(
+            book=book, review=review
+        )
+        return review
+
 
 class GetReviewSerializer(serializers.ModelSerializer):
     """Serializer to get Book Reviews"""

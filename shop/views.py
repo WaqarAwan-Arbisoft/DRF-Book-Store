@@ -120,17 +120,6 @@ class AddReviewView(generics.CreateAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        book = None
-        try:
-            book = Book.objects.get(pk=serializer.validated_data['book'].id)
-        except:
-            raise exceptions.NotFound('No Book found with this ID')
-
-        rev = serializer.save(user=self.request.user)
-        friends = Friendship.objects.filter((Q(initiatedBy=self.request.user) | Q(
-            initiatedTowards=self.request.user)), is_accepted=True).values_list('id', flat=True)
-
 
 class GetBookReview(generics.ListAPIView):
     """Get all the Reviews of a book"""

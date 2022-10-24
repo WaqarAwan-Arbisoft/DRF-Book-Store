@@ -31,12 +31,14 @@ SECRET_KEY = 'django-insecure-x3t)y!zfg@%1j8f66fmj2qe1y9eeb4%m6g$8)z&#m)nb5oa@#w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     'books',
     'shop',
     'socialmedia',
+    'chatroom',
 ]
 
 MIDDLEWARE = [
@@ -164,8 +167,6 @@ CORS_ALLOW_METHODS = [
 REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'detail',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    # 'PAGE_SIZE': 2
     'EXCEPTION_HANDLER': 'bookshop.custom_exception.custom_exception_handler',
     'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',)
 }
@@ -178,4 +179,12 @@ EMAIL_FILE_PATH = BASE_DIR / "emails"
 SPECTACULAR_SETTINGS = {
     # This will convert the URI field to a file field in Swagger
     'COMPONENT_SPLIT_REQUEST': True,
+}
+
+ASGI_APPLICATION = 'bookshop.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+    }
 }
