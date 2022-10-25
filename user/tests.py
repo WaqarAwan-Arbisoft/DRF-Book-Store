@@ -1,12 +1,15 @@
 """
 Test the User app features
 """
+from datetime import timedelta
+from django.utils import timezone
 
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from oauth2_provider.models import Application, AccessToken
 
 
 class UserAppTests(APITestCase):
@@ -26,6 +29,27 @@ class UserAppTests(APITestCase):
         url = reverse('confirm-email')
         return self.client.post(url, data, format='json')
 
+    def __create_authorization_header(self, token):
+        return "Bearer {0}".format(token)
+
+    def __create_token(self, user):
+
+        app, appCreated = Application.objects.get_or_create(
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            redirect_uris='https://www.none.com/oauth2/callback',
+            name='dummy',
+            user=user
+        )
+        access_token, tokenCreated = AccessToken.objects.get_or_create(
+            user=user,
+            scope='read write',
+            expires=timezone.now() + timedelta(seconds=300),
+            token=f'secret-access-token-key-{user.id}',
+            application=app
+        )
+        return access_token
+
     def create_user_and_set_token_credentials(self, email):
         """
         Create a new permanent user
@@ -40,9 +64,11 @@ class UserAppTests(APITestCase):
             name=data['name'], tempUser=False,
             user_code=123456
         )
-        token = Token.objects.create(user=user)
+        token = self.__create_authorization_header(
+            token=self.__create_token(user=user)
+        )
         self.client.credentials(
-            HTTP_AUTHORIZATION='Token {0}'.format(token.key)
+            HTTP_AUTHORIZATION=token
         )
         return user
 

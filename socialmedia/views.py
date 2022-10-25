@@ -3,8 +3,7 @@ Views for social interactions
 """
 
 from rest_framework import (generics, permissions,
-                            authentication, exceptions,
-                            pagination
+                            exceptions, pagination
                             )
 
 from socialmedia.utils import SocialMediaBusinessLogic
@@ -21,14 +20,12 @@ from .models import (BookFeed, Friendship,
 class AddAsFriendView(generics.CreateAPIView):
     """Create a new friendship"""
     serializer_class = AddFriendSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 
 class FetchFriendRequestsView(generics.ListAPIView):
     """Fetch all the friend request of a user"""
     serializer_class = FriendsSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -41,7 +38,6 @@ class FetchFriendRequestsView(generics.ListAPIView):
 class AcceptRequestView(generics.UpdateAPIView):
     """Accept the request"""
     serializer_class = AcceptRequestSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['patch']
 
@@ -58,7 +54,6 @@ class AcceptRequestView(generics.UpdateAPIView):
 class RemoveRequestView(generics.DestroyAPIView):
     """Remove the request initiated by the user"""
     serializer_class = RejectRequestSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -71,7 +66,6 @@ class RemoveRequestView(generics.DestroyAPIView):
 class FetchFriendshipNotifications(generics.ListAPIView):
     """Fetch all the friendship notification of a user"""
     serializer_class = FriendshipNotificationSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     PAGE_SIZE = 4
     pagination_class = pagination.LimitOffsetPagination
@@ -83,7 +77,6 @@ class FetchFriendshipNotifications(generics.ListAPIView):
 class FetchFeedView(generics.ListAPIView):
     """Fetch the feed of a particular user"""
     serializer_class = BookFeedSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     PAGE_SIZE = 4
     pagination_class = pagination.LimitOffsetPagination
@@ -95,7 +88,6 @@ class FetchFeedView(generics.ListAPIView):
 class RemoveFriendView(generics.DestroyAPIView):
     """Remove friend from the friendship"""
     serializer_class = FriendshipSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -107,7 +99,6 @@ class RemoveFriendView(generics.DestroyAPIView):
 
 class FetchFriendshipView(generics.RetrieveAPIView):
     serializer_class = FetchFriendshipSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):

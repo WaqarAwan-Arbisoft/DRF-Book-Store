@@ -1,18 +1,17 @@
 """
 Views for the User API
 """
-from rest_framework import generics, authentication, permissions, exceptions, pagination
+from rest_framework import generics, permissions, exceptions, pagination
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from django.contrib.auth import get_user_model
 from rest_framework.filters import SearchFilter
 
 from user.models import PasswordRecovery
-from .serializers import (GoogleRegisterSerializer, NewUserSerializer,
+from .serializers import (NewUserSerializer, UserSerializer,
                           RetrieveTokenSerializer, PasswordRecoverySerializer,
                           UpdatePasswordSerializer, UserCodeSerializer,
                           AuthTokenSerializer, UpdateUserSerializer,
-                          UserSerializer,
                           )
 
 
@@ -41,13 +40,6 @@ class CompleteRegistration(generics.UpdateAPIView):
             )
 
 
-class GoogleRegisterView(generics.CreateAPIView):
-    """
-    Register with google
-    """
-    serializer_class = GoogleRegisterSerializer
-
-
 class CreateTokenView(ObtainAuthToken):
     """Create an auth token for the user"""
     serializer_class = AuthTokenSerializer
@@ -57,7 +49,6 @@ class CreateTokenView(ObtainAuthToken):
 class UpdateUserView(generics.UpdateAPIView):
     """Update the existing user"""
     serializer_class = UpdateUserSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['patch']
 
@@ -77,7 +68,6 @@ class UpdateUserView(generics.UpdateAPIView):
 class ListAllView(generics.ListAPIView):
     """List all users"""
     serializer_class = UserSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [SearchFilter]
     search_fields = ['name', 'email']
@@ -108,12 +98,10 @@ class GetUserData(generics.RetrieveAPIView):
     """User can obtain its own data"""
     serializer_class = UserSerializer
     queryset = get_user_model().objects.all()
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         userData = None
-
         try:
             userData = self.queryset.get(pk=self.request.user.pk)
         except:

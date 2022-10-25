@@ -1,6 +1,7 @@
 """
 User model file
 """
+from email.policy import default
 import pyotp
 
 from django.contrib.auth.models import (AbstractBaseUser,
@@ -21,6 +22,7 @@ class UserManager(BaseUserManager):
                           **extraFields
                           )
         user.set_password(password)
+        user.tempUser = True
         user.save(using=self._db)
         return user
 
@@ -34,7 +36,6 @@ class UserManager(BaseUserManager):
         user.is_staff = True
         user.is_superuser = True
         user.name = 'admin'
-        user.tempUser = False
         user.save(using=self._db)
 
         return user
@@ -43,7 +44,9 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system"""
     email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255, blank=False)
+    name = models.CharField(max_length=255, blank=False,
+                            default="Default username"
+                            )
     image = models.ImageField(
         upload_to='images',
         null=True
@@ -53,8 +56,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     creation = models.DateTimeField(auto_now_add=True)
-    user_code = models.IntegerField(blank=True)
-    tempUser = models.BooleanField(default=True)
+    user_code = models.IntegerField(blank=True, null=True)
+    tempUser = models.BooleanField(default=False)
 
     objects = UserManager()
     USERNAME_FIELD = 'email'

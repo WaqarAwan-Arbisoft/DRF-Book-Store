@@ -24,17 +24,18 @@ class NewUserSerializer(serializers.ModelSerializer):
 
     def run_validation(self, data=...):
         get_user_model().objects.filter(
-            creation__lt=datetime.now()
+            creation__lt=timezone.now()
             - timedelta(minutes=3),
-            tempUser=True
+            tempUser=True,
         ).delete()
         return super().run_validation(data)
 
     def validate_password(self, value):
-        if len(value) < 5:
+        if len(value) < 5 or not value:
             raise exceptions.ValidationError(
                 detail='Password should be at least 5 characters long.'
             )
+        return value
 
     def create(self, validated_data):
         """
@@ -46,13 +47,6 @@ class NewUserSerializer(serializers.ModelSerializer):
             )
         code = UserAppBusinessLogic().send_mail(email=validated_data['email'])
         return get_user_model().objects.create_user(**validated_data, user_code=code)
-
-
-class GoogleRegisterSerializer(serializers.ModelSerializer):
-    """Serializer for registering with google"""
-    class Meta:
-        model = get_user_model()
-        fields = ['email']
 
 
 class UserSerializer(serializers.ModelSerializer):

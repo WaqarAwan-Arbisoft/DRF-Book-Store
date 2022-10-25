@@ -4,8 +4,7 @@ Views for the Shop
 
 import stripe
 
-from rest_framework import generics, exceptions, authentication, permissions, status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework import generics, exceptions, permissions, status
 from rest_framework.response import Response
 from bookshop.settings import env
 from django.db.models import F
@@ -23,23 +22,22 @@ from shop.serializers import (CartSerializer, CheckStockSerializer,
                               FetchLikeSerializer, GetCartSerializer,
                               GetReviewSerializer, ItemSerializer,
                               LikeBookSerializer, OrderItemsSerializer,
-                              OrderSerializer, RemoveItemSerializer, StripePaymentSerializer,
-                              UserReviewSerializer
+                              OrderSerializer, RemoveItemSerializer,
+                              StripePaymentSerializer, UserReviewSerializer
                               )
+
 stripe.api_key = env('STRIPE_API_KEY')
 
 
 class AddToCartView(generics.CreateAPIView):
     """Add Items to cart View"""
     serializer_class = ItemSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 
 class FetchCartItemsView(generics.ListAPIView):
     """Fetch all items of the cart"""
     serializer_class = GetCartSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -55,7 +53,6 @@ class FetchCartItemsView(generics.ListAPIView):
 class GetDestroyCartView(generics.RetrieveDestroyAPIView):
     """Fetch and delete cart of a user"""
     serializer_class = CartSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -71,7 +68,6 @@ class GetDestroyCartView(generics.RetrieveDestroyAPIView):
 class UpdateItemQuantityView(generics.UpdateAPIView):
     """Update the Item quantity for a Cart"""
     serializer_class = ItemSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['patch']
 
@@ -90,7 +86,6 @@ class UpdateItemQuantityView(generics.UpdateAPIView):
 class RemoveItemView(generics.UpdateAPIView):
     """Remove Item from the cart"""
     serializer_class = RemoveItemSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['patch']
 
@@ -110,14 +105,12 @@ class RemoveItemView(generics.UpdateAPIView):
 class MakePaymentView(generics.CreateAPIView):
     """Make string payment"""
     serializer_class = StripePaymentSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 
 class AddReviewView(generics.CreateAPIView):
     """API for adding review to the book"""
     serializer_class = UserReviewSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 
@@ -133,14 +126,12 @@ class GetBookReview(generics.ListAPIView):
 class CheckStockView(generics.CreateAPIView):
     """Check the stock availability with Cart Items"""
     serializer_class = CheckStockSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 
 class PurchaseFromStock(generics.CreateAPIView):
     """Update the stock after purchase"""
     serializer_class = CheckStockSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -153,7 +144,6 @@ class PurchaseFromStock(generics.CreateAPIView):
 class FetchOrdersView(generics.ListAPIView):
     """Fetch the Orders of a particular user"""
     serializer_class = OrderSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -163,7 +153,6 @@ class FetchOrdersView(generics.ListAPIView):
 class FetchOrderDetail(generics.ListAPIView):
     """Fetch the details of an order"""
     serializer_class = OrderItemsSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -179,14 +168,12 @@ class FetchOrderDetail(generics.ListAPIView):
 class AddToFavoriteView(generics.CreateAPIView):
     """View to add a book to user's favorites"""
     serializer_class = FavoriteSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 
 class FetchFavoritesView(generics.ListAPIView):
     """Fetch all the favorites of a user"""
     serializer_class = FetchFavoriteSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -196,7 +183,6 @@ class FetchFavoritesView(generics.ListAPIView):
 class CheckIsFavoriteView(generics.RetrieveAPIView):
     """Get if a user has marked the book as favorite"""
     serializer_class = FetchFavoriteSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -214,7 +200,6 @@ class CheckIsFavoriteView(generics.RetrieveAPIView):
 class RemoveFavorite(generics.DestroyAPIView):
     """Remove a book from favorites"""
     serializer_class = FetchFavoriteSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -232,14 +217,12 @@ class RemoveFavorite(generics.DestroyAPIView):
 class LikeBookView(generics.CreateAPIView):
     """Like the book"""
     serializer_class = LikeBookSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
 
 class CheckIfLikedView(generics.RetrieveAPIView):
     """Check if a book is liked"""
     serializer_class = FetchLikeSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -257,7 +240,6 @@ class CheckIfLikedView(generics.RetrieveAPIView):
 class RemoveLikeView(generics.DestroyAPIView):
     """Remove the like from a book"""
     serializer_class = FetchLikeSerializer
-    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):

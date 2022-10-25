@@ -1,21 +1,46 @@
 """
 Module for testing the Shop app features
 """
+from datetime import timedelta
+from django.utils import timezone
 
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from django.urls import reverse
+from oauth2_provider.models import Application, AccessToken
 
 from books.models import Book
 from shop.models import Cart, Favorite, Item, Like, Review
+from bookshop.settings import env
 
 
 class ShopAppTests(APITestCase):
     """
     Test the shop app features
     """
+
+    def __create_authorization_header(self, token):
+        return "Bearer {0}".format(token)
+
+    def __create_token(self, user):
+
+        app = Application.objects.create(
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            redirect_uris='https://www.none.com/oauth2/callback',
+            name='dummy',
+            user=user
+        )
+        access_token = AccessToken.objects.create(
+            user=user,
+            scope='read write',
+            expires=timezone.now() + timedelta(seconds=300),
+            token=f'secret-access-token-key-{user.id}',
+            application=app
+        )
+        return access_token
 
     def create_user_and_set_token_credentials(self, email):
         """
@@ -31,9 +56,11 @@ class ShopAppTests(APITestCase):
             name=data['name'], tempUser=False,
             user_code=123456
         )
-        token = Token.objects.create(user=user)
+        token = self.__create_authorization_header(
+            token=self.__create_token(user=user)
+        )
         self.client.credentials(
-            HTTP_AUTHORIZATION='Token {0}'.format(token.key)
+            HTTP_AUTHORIZATION=token
         )
         return user
 
