@@ -15,16 +15,29 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.conf.urls.static import static
 from django.conf import settings
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Bookshop App",
+        default_version='v1',
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/schema/', SpectacularAPIView.as_view(), name='api-schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='api-schema'),
-         name='api-docs'),
-    path('auth/', include('drf_social_oauth2.urls', namespace='drf')),
+    path('api/docs/', schema_view.with_ui(
+        'swagger', cache_timeout=0),
+        name='schema-swagger-ui'),
+    path('auth/', include(
+        'drf_social_oauth2.urls', namespace='drf'
+    ), name='oauth'),
     path('user/', include('user.urls')),
     path('books/', include('books.urls')),
     path('shop/', include('shop.urls')),

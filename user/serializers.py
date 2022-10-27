@@ -2,9 +2,9 @@
 Serializers for the User API View
 """
 from django.utils import timezone
-from datetime import timedelta, datetime
+from datetime import timedelta
 
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from rest_framework import serializers, exceptions
 
 from .models import PasswordRecovery
@@ -45,8 +45,11 @@ class NewUserSerializer(serializers.ModelSerializer):
             raise exceptions.ValidationError(
                 'Another user with this email already exists.'
             )
-        code = UserAppBusinessLogic().send_mail(email=validated_data['email'])
-        return get_user_model().objects.create_user(**validated_data, user_code=code)
+        code = UserAppBusinessLogic().send_mail(
+            email=validated_data['email']
+        )
+        return get_user_model().objects.\
+            create_user(**validated_data, user_code=code)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -69,7 +72,8 @@ class UserCodeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Create a new user in the system"""
         if (timezone.now() >
-                (instance.creation+timedelta(minutes=3)) and instance.tempUser):
+                (instance.creation+timedelta(minutes=3))
+                and instance.tempUser):
             instance.delete()
             raise exceptions.ValidationError(
                 'Your verification code has been expired. Please try again!'
@@ -99,29 +103,32 @@ class AuthTokenSerializer(serializers.Serializer):
         style={'input_type': 'password'},
         trim_whitespace=False
     )
+    grant_type = serializers.CharField()
+    client_id = serializers.CharField()
+    client_secret = serializers.CharField()
 
-    def validate(self, attrs):
-        """Validate and authenticate the user"""
-        email = attrs.get('email')
-        password = attrs.get('password')
-        try:
-            user = get_user_model().objects.get(
-                email=email,
-                password=password
-            )
-        except:
-            user = None
-        user = authenticate(
-            request=self.context.get('request'),
-            username=email,
-            password=password
-        )
-        if not user:
-            raise exceptions.ValidationError(
-                'Unable to authenticate with the provided credentials.'
-            )
-        attrs['user'] = user
-        return attrs
+    # def validate(self, attrs):
+    #     """Validate and authenticate the user"""
+    #     email = attrs.get('email')
+    #     password = attrs.get('password')
+    #     try:
+    #         user = get_user_model().objects.get(
+    #             email=email,
+    #             password=password
+    #         )
+    #     except:
+    #         user = None
+    #     user = authenticate(
+    #         request=self.context.get('request'),
+    #         username=email,
+    #         password=password
+    #     )
+    #     if not user:
+    #         raise exceptions.ValidationError(
+    #             'Unable to authenticate with the provided credentials.'
+    #         )
+    #     attrs['user'] = user
+    #     return attrs
 
 
 class UserCommentSerializer(serializers.ModelSerializer):

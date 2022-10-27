@@ -7,10 +7,14 @@ from rest_framework import (generics, permissions,
                             )
 
 from socialmedia.utils import SocialMediaBusinessLogic
-from socialmedia.serializers import (AcceptRequestSerializer, AddFriendSerializer,
-                                     BookFeedSerializer, FetchFriendshipSerializer,
-                                     FriendsSerializer, FriendshipNotificationSerializer,
-                                     FriendshipSerializer, RejectRequestSerializer
+from socialmedia.serializers import (AcceptRequestSerializer,
+                                     AddFriendSerializer,
+                                     BookFeedSerializer,
+                                     FetchFriendshipSerializer,
+                                     FriendsSerializer,
+                                     FriendshipNotificationSerializer,
+                                     FriendshipSerializer,
+                                     RejectRequestSerializer
                                      )
 from .models import (BookFeed, Friendship,
                      FriendshipNotification
@@ -82,7 +86,9 @@ class FetchFeedView(generics.ListAPIView):
     pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
-        return BookFeed.objects.filter(notify=self.request.user).order_by('-id')
+        return BookFeed.objects.filter(
+            notify=self.request.user
+        ).order_by('-id')
 
 
 class RemoveFriendView(generics.DestroyAPIView):

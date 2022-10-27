@@ -17,14 +17,16 @@ from .serializers import (NewUserSerializer, UserSerializer,
 
 class ConfirmEmailView(generics.CreateAPIView):
     """
-    View for creating a temporary user and sending email 
+    View for creating a temporary user and sending email
     for confirmation.
     """
     serializer_class = NewUserSerializer
 
 
 class CompleteRegistration(generics.UpdateAPIView):
-    """Create a new user in the system"""
+    """
+    Create a new user in the system
+    """
     serializer_class = UserCodeSerializer
     http_method_names = ['patch']
 
@@ -41,13 +43,17 @@ class CompleteRegistration(generics.UpdateAPIView):
 
 
 class CreateTokenView(ObtainAuthToken):
-    """Create an auth token for the user"""
+    """
+    Create an auth token for the user
+    """
     serializer_class = AuthTokenSerializer
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
 
 
 class UpdateUserView(generics.UpdateAPIView):
-    """Update the existing user"""
+    """
+    Update the existing user
+    """
     serializer_class = UpdateUserSerializer
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['patch']
@@ -66,7 +72,9 @@ class UpdateUserView(generics.UpdateAPIView):
 
 
 class ListAllView(generics.ListAPIView):
-    """List all users"""
+    """
+    List all users
+    """
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [SearchFilter]
@@ -95,7 +103,9 @@ class GetUserByIdView(generics.RetrieveAPIView):
 
 
 class GetUserData(generics.RetrieveAPIView):
-    """User can obtain its own data"""
+    """
+    User can obtain its own data
+    """
     serializer_class = UserSerializer
     queryset = get_user_model().objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -110,12 +120,16 @@ class GetUserData(generics.RetrieveAPIView):
 
 
 class EmailRecoveryLink(generics.CreateAPIView):
-    """Email recovery view to send link to the user"""
+    """
+    Email recovery view to send link to the user
+    """
     serializer_class = PasswordRecoverySerializer
 
 
 class CheckTokenAvailability(generics.RetrieveAPIView):
-    """Check token availability and destroy if available"""
+    """
+    Check token availability and destroy if available
+    """
     serializer_class = RetrieveTokenSerializer
 
     def get_object(self):
@@ -129,7 +143,9 @@ class CheckTokenAvailability(generics.RetrieveAPIView):
 
 
 class UpdateRecoveredPasswordView(generics.UpdateAPIView):
-    """Update the password with the new password"""
+    """
+    Update the password with the new password
+    """
     serializer_class = UpdatePasswordSerializer
     http_method_names = ['patch']
 

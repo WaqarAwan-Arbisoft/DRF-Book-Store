@@ -3,7 +3,7 @@ This module defines the business logics for Shop app
 """
 
 from rest_framework import exceptions
-from django.db.models import F, Q
+from django.db.models import Q
 
 from books.models import Book
 from shop.models import Cart, Item, Order, OrderedItem
@@ -83,8 +83,11 @@ class ShopBusinessLogic(object):
 
     def notify_friends(self, book, review=None, like=None, favorite=None):
         """Notify friends about an event"""
-        friends = Friendship.objects.filter((Q(initiatedBy=self.request.user) | Q(
-            initiatedTowards=self.request.user)), is_accepted=True).values_list('id', flat=True)
+        friends = Friendship.objects.filter(
+            (Q(initiatedBy=self.request.user)
+             | Q(initiatedTowards=self.request.user)),
+            is_accepted=True
+        ).values_list('id', flat=True)
         feed = None
         if review:
             feed = BookFeed.objects.create(

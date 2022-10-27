@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'drf_spectacular',
+    'drf_yasg',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
@@ -171,7 +171,6 @@ CORS_ALLOW_METHODS = [
 
 REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'detail',
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'bookshop.custom_exception.custom_exception_handler',
     'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -197,10 +196,15 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / "emails"
 
-
-SPECTACULAR_SETTINGS = {
-    # This will convert the URI field to a file field in Swagger
-    'COMPONENT_SPLIT_REQUEST': True,
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Auth Token eg [Bearer (AccessToken)]': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
 
 ASGI_APPLICATION = 'bookshop.asgi.application'

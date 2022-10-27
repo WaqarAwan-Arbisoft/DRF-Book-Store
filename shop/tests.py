@@ -6,14 +6,12 @@ from django.utils import timezone
 
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 from django.urls import reverse
 from oauth2_provider.models import Application, AccessToken
 
 from books.models import Book
 from shop.models import Cart, Favorite, Item, Like, Review
-from bookshop.settings import env
 
 
 class ShopAppTests(APITestCase):
@@ -85,8 +83,10 @@ class ShopAppTests(APITestCase):
         Create a book in the test database
         """
         return Book.objects.create(name=name, author='test-author',
-                                   description='test-book-description', price=250.00,
-                                   noOfPages=250)
+                                   description='test-book-description',
+                                   price=250.00,
+                                   noOfPages=250
+                                   )
 
     def create_review(self, book, user):
         """
@@ -175,7 +175,7 @@ class ShopAppTests(APITestCase):
 
     def test_fetch_user_cart(self):
         """
-        Ensure that the user will be able to fetch his/her 
+        Ensure that the user will be able to fetch his/her
         cart
         """
         url = reverse('get-delete-cart')
@@ -252,7 +252,7 @@ class ShopAppTests(APITestCase):
         Ensure that the user will be able to add review
         """
         url = reverse('add-review')
-        user = self.create_user_and_set_token_credentials(
+        self.create_user_and_set_token_credentials(
             email='test-user@gmail.com'
         )
         book = self.create_book(
@@ -375,7 +375,7 @@ class ShopAppTests(APITestCase):
 
     def test_like_book(self):
         """
-        Ensure that a user will be able to give like to a 
+        Ensure that a user will be able to give like to a
         book.
         """
         user = self.create_user_and_set_token_credentials(
@@ -417,7 +417,7 @@ class ShopAppTests(APITestCase):
 
     def test_remove_like(self):
         """
-        Ensure that user will be able to remove book from 
+        Ensure that user will be able to remove book from
         likes list.
         """
         book = self.create_book(name='test-book')

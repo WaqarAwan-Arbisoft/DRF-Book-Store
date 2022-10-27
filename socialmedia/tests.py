@@ -5,7 +5,6 @@ from datetime import timedelta
 from django.utils import timezone
 
 from rest_framework.test import APITestCase
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -109,7 +108,7 @@ class SocialMediaAppTest(APITestCase):
 
     def test_add_user_as_friend(self):
         """
-        Ensure that the user will be able to add other user 
+        Ensure that the user will be able to add other user
         as friend.
         """
         user = self.create_user_and_set_token_credentials(
@@ -117,7 +116,8 @@ class SocialMediaAppTest(APITestCase):
         )
         otherUser = self.create_user(email='book-test-user2@gmail.com')
         url = reverse('add-as-friend')
-        response = self.client.post(url, data={'initiatedTowards': otherUser.id},
+        response = self.client.post(url,
+                                    data={'initiatedTowards': otherUser.id},
                                     format='json'
                                     )
         assert response.status_code == status.HTTP_201_CREATED
@@ -128,7 +128,7 @@ class SocialMediaAppTest(APITestCase):
 
     def test_fetch_all_friend_requests_of_user(self):
         """
-        Ensure that the user can fetch his/her pending friend 
+        Ensure that the user can fetch his/her pending friend
         requests.
         """
         url = reverse('fetch-friend-requests')
@@ -185,7 +185,7 @@ class SocialMediaAppTest(APITestCase):
 
     def test_remove_friend_request(self):
         """
-        Ensure that user will be able to remove/decline 
+        Ensure that user will be able to remove/decline
         friend request from a user.
         """
         user1Mail = 'test-user1@gmail.com'

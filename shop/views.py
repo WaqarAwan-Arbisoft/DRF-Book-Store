@@ -4,14 +4,10 @@ Views for the Shop
 
 import stripe
 
-from rest_framework import generics, exceptions, permissions, status
-from rest_framework.response import Response
+from rest_framework import generics, exceptions, permissions
 from bookshop.settings import env
 from django.db.models import F
-from django.db.models import Q
-from shop.utils import ShopBusinessLogic
 
-from socialmedia.models import BookFeed, Friendship
 from books.models import Book
 from shop.models import (Cart, Favorite, Item,
                          Like, Order, OrderedItem,
@@ -120,7 +116,9 @@ class GetBookReview(generics.ListAPIView):
     serializer_class = GetReviewSerializer
 
     def get_queryset(self):
-        return Review.objects.filter(book=self.kwargs.get('bookId')).order_by('-id')
+        return Review.objects.filter(
+            book=self.kwargs.get('bookId')
+        ).order_by('-id')
 
 
 class CheckStockView(generics.CreateAPIView):

@@ -12,9 +12,13 @@ from shop.models import Favorite, Like, Review
 class Friendship(models.Model):
     """Model that contains friendship data"""
     initiatedBy = models.ForeignKey(
-        get_user_model(), related_name='frSender', on_delete=models.CASCADE)
+        get_user_model(), related_name='frSender',
+        on_delete=models.CASCADE
+    )
     initiatedTowards = models.ForeignKey(
-        get_user_model(), related_name='frReceiver', on_delete=models.CASCADE)
+        get_user_model(), related_name='frReceiver',
+        on_delete=models.CASCADE
+    )
     creation = models.DateField(auto_now_add=True)
     is_accepted = models.BooleanField(default=False)
 
@@ -22,9 +26,13 @@ class Friendship(models.Model):
 class FriendshipNotification(models.Model):
     """Model for notification about friendships"""
     sender = models.ForeignKey(
-        get_user_model(), related_name='requestSender', on_delete=models.CASCADE)
+        get_user_model(), related_name='requestSender',
+        on_delete=models.CASCADE
+    )
     receiver = models.ForeignKey(
-        get_user_model(), related_name='requestReceiver', on_delete=models.CASCADE)
+        get_user_model(), related_name='requestReceiver',
+        on_delete=models.CASCADE
+    )
     creation = models.DateField(auto_now_add=True)
 
 

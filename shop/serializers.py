@@ -12,7 +12,6 @@ from shop.models import (Cart, Favorite, Item,
                          )
 from books.serializers import BookSerializer, OrderBookSerializer
 from shop.utils import ShopBusinessLogic
-from socialmedia.models import Friendship
 from user.serializers import UserCommentSerializer
 
 
@@ -31,7 +30,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create a new item in the cart and return"""
-        cart, book = ShopBusinessLogic(self.context['request']).is_cart_and_book_available(
+        cart, book = ShopBusinessLogic(self.context['request']).\
+            is_cart_and_book_available(
             bookId=validated_data['book'].id
         )
         if (book.stock == 0):
@@ -101,7 +101,8 @@ class CheckStockSerializer(serializers.ModelSerializer):
         for item in validated_data['items']:
             if (item['book'].stock < item['quantity']):
                 raise exceptions.ValidationError(
-                    f"Not enough quantity available for {item['book'].name}. Only {item['book'].stock} is available.")
+                    f"Not enough quantity available for {item['book'].name}.\
+                         Only {item['book'].stock} is available.")
         return validated_data
 
 
@@ -123,8 +124,10 @@ class UserReviewSerializer(serializers.ModelSerializer):
             )
         try:
             review = Review.objects.create(
-                book=book, user=self.context['request'].user,
-                comment=validated_data['comment'], rating=validated_data['rating']
+                book=book,
+                user=self.context['request'].user,
+                comment=validated_data['comment'],
+                rating=validated_data['rating']
             )
         except:
             raise exceptions.ValidationError(
@@ -185,8 +188,10 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 'No book found with this ID'
             )
         try:
-            favorite = Favorite.objects.create(book=book,
-                                               user=self.context['request'].user)
+            favorite = Favorite.objects.create(
+                book=book,
+                user=self.context['request'].user
+            )
         except:
             raise exceptions.ValidationError(
                 'Already added to favorites.'

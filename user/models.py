@@ -1,7 +1,6 @@
 """
 User model file
 """
-from email.policy import default
 import pyotp
 
 from django.contrib.auth.models import (AbstractBaseUser,

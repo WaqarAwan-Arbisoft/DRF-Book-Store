@@ -18,15 +18,18 @@ class BooksAppTest(APITestCase):
         """
         Create a book in the test database
         """
-        return Book.objects.create(name='test-book', author='test-author',
-                                   description='test-book-description', price=250.00,
-                                   noOfPages=250)
+        return Book.objects.create(name='test-book',
+                                   author='test-author',
+                                   description='test-book-description',
+                                   price=250.00,
+                                   noOfPages=250
+                                   )
 
     def test_fetch_all_books(self):
         """
         Ensure that all books are getting fetched
         """
-        book = self.create_book()
+        self.create_book()
         url = reverse('fetch-all')
         response = self.client.get(url, format='json')
         assert response.status_code == status.HTTP_200_OK

@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from rest_framework.test import APITestCase
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from oauth2_provider.models import Application, AccessToken
@@ -90,7 +89,7 @@ class UserAppTests(APITestCase):
 
     def test_register_and_save_temp_user(self):
         """
-        Ensure we can register the user with data 
+        Ensure we can register the user with data
         and save the user as a temporary user
         """
         user_email = 'test_user@gmail.com'

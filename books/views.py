@@ -1,7 +1,6 @@
 """
 Views for the Book APIs
 """
-from enum import unique
 from rest_framework import generics, pagination
 from django.db.models import Count
 from rest_framework.filters import SearchFilter
@@ -32,7 +31,6 @@ class FetchTopBooksView(generics.ListAPIView):
     serializer_class = FetchTopSerializer
 
     def get_queryset(self):
-        #! Change the query
         booksRequired = self.kwargs.get('total')
         mostLiked = Like.objects.values('book').annotate(
             Count("book")).order_by("-book__count")[:3]
