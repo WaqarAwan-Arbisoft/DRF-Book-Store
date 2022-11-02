@@ -32,7 +32,7 @@ class BooksAppTest(APITestCase):
         self.create_book()
         url = reverse('fetch-all')
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_book(self):
         """
@@ -41,5 +41,5 @@ class BooksAppTest(APITestCase):
         book = self.create_book()
         url = reverse('fetch-book', kwargs={'pk': book.id})
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['name'] == book.name
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], book.name)

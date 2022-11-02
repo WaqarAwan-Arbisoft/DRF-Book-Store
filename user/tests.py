@@ -94,14 +94,14 @@ class UserAppTests(APITestCase):
         """
         user_email = 'test_user@gmail.com'
         response = self.register_temp_user(email=user_email)
-        assert response.status_code == status.HTTP_201_CREATED
-        assert get_user_model().objects.get().email == user_email
-        assert get_user_model().objects.get().tempUser == True
-        assert get_user_model().objects.count() == 1
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(get_user_model().objects.get().email, user_email)
+        self.assertEqual(get_user_model().objects.get().tempUser, True)
+        self.assertEqual(get_user_model().objects.count(), 1)
         # User already exists
         user_email = 'test_user@gmail.com'
         response = self.register_temp_user(email=user_email)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_complete_registration(self):
         """
@@ -116,7 +116,7 @@ class UserAppTests(APITestCase):
         url = reverse('register')
         response = self.client.patch(url, confirmation_code, format='json')
 
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_profile(self):
         """
@@ -126,20 +126,20 @@ class UserAppTests(APITestCase):
         user = self.create_user_and_set_token_credentials(
             email='test_user1@gmail.com'
         )
-        assert get_user_model().objects.get().name == user.name
+        self.assertEqual(get_user_model().objects.get().name, user.name)
         updateData = {
             'name': 'Test User Updated'
         }
         url = reverse('update')
         response = self.client.patch(url, updateData, format='json')
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         """
         Clearing up credentials to check if the response is false for
         non-auth users
         """
         self.client.credentials()
         response = self.client.patch(url, updateData, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_fetch_all_users(self):
         """
@@ -151,13 +151,13 @@ class UserAppTests(APITestCase):
         )
         url = reverse('list-all')
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         """
         Clearing up credentials
         """
         self.client.credentials()
         response = self.client.patch(url, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_fetch_profile_data(self):
         """
@@ -168,13 +168,13 @@ class UserAppTests(APITestCase):
         )
         url = reverse('fetch-user-data')
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         """
         Clearing up credentials
         """
         self.client.credentials()
         response = self.client.patch(url, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_fetch_profile_by_id(self):
         """
@@ -183,7 +183,7 @@ class UserAppTests(APITestCase):
         user = self.create_user(email='test_user1@gmail.com')
         url = reverse('fetch-user-by-id', kwargs={'userId': user.id})
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_password_recovery_email(self):
         """
@@ -195,8 +195,8 @@ class UserAppTests(APITestCase):
             url, data={'email': user.email},
             format='json'
         )
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['email'] == user.email
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['email'], user.email)
 
     def test_update_password_after_recovery(self):
         """
@@ -212,5 +212,5 @@ class UserAppTests(APITestCase):
             url, data=updatedData,
             format='json'
         )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['password'] != user.password
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data['password'], user.password)

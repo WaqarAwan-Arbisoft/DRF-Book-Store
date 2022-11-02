@@ -146,14 +146,15 @@ class ShopAppTests(APITestCase):
         response = self.client.post(url, data=bookData,
                                     format='json'
                                     )
-        assert response.status_code == status.HTTP_201_CREATED
-        assert Cart.objects.get(owner=user).items.all()[0].id == book.id
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Cart.objects.get(
+            owner=user).items.all()[0].id, book.id)
         # Clear up the credentials
         self.client.credentials()
         response = self.client.post(url, data=bookData,
                                     format='json'
                                     )
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_fetch_cart_items(self):
         """
@@ -166,12 +167,12 @@ class ShopAppTests(APITestCase):
         book = self.create_book(name='test-book')
         self.add_to_cart(user=user, book=book)
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
         # Clear up the credentials
         self.client.credentials()
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_fetch_user_cart(self):
         """
@@ -183,17 +184,17 @@ class ShopAppTests(APITestCase):
             email='test-user@gmail.com'
         )
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # Cart will be created when user adds a book
         book = self.create_book(name='test-book')
         self.add_to_cart(user=user, book=book)
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['owner'] == user.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['owner'], user.id)
         # Clear up the credentials
         self.client.credentials()
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_user_cart_item_quantity(self):
         """
@@ -206,7 +207,7 @@ class ShopAppTests(APITestCase):
         book = self.create_book(name='test-book')
         cart = self.add_to_cart(user=user, book=book)
         item = self.fetch_item_from_cart(cart=cart, book=book)
-        assert item.quantity == 1
+        self.assertEqual(item.quantity, 1)
         # Increase quantity
         data = {
             'book': book.id,
@@ -216,8 +217,8 @@ class ShopAppTests(APITestCase):
                                      format='json'
                                      )
         item = self.fetch_item_from_cart(cart=cart, book=book)
-        assert response.status_code == status.HTTP_200_OK
-        assert item.quantity == 2
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(item.quantity, 2)
         # Decrease quantity
         data = {
             'book': book.id,
@@ -227,8 +228,8 @@ class ShopAppTests(APITestCase):
                                      format='json'
                                      )
         item = self.fetch_item_from_cart(cart=cart, book=book)
-        assert response.status_code == status.HTTP_200_OK
-        assert item.quantity == 1
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(item.quantity, 1)
 
     def test_remove_item_from_user_cart(self):
         """
@@ -245,7 +246,7 @@ class ShopAppTests(APITestCase):
                                      data={
                                          'book': book.id
                                      }, format='json')
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_add_review(self):
         """
@@ -267,14 +268,14 @@ class ShopAppTests(APITestCase):
             url, data=data,
             format='json'
         )
-        assert response.status_code == status.HTTP_201_CREATED
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # Clear the credentials
         self.client.credentials()
         response = self.client.post(
             url, data=data,
             format='json'
         )
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_fetch_book_review(self):
         """
@@ -290,8 +291,8 @@ class ShopAppTests(APITestCase):
             user=user
         )
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert Review.objects.get().id == review.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Review.objects.get().id, review.id)
 
     def test_add_to_favorite(self):
         """
@@ -304,17 +305,17 @@ class ShopAppTests(APITestCase):
         )
         url = reverse('add-to-favorite', kwargs={'bookId': book.id})
         response = self.client.post(url, format='json')
-        assert response.status_code == status.HTTP_201_CREATED
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         favorite = Favorite.objects.get()
-        assert favorite.book.id == book.id
-        assert favorite.user.id == user.id
+        self.assertEqual(favorite.book.id, book.id)
+        self.assertEqual(favorite.user.id, user.id)
         """
         Clearing the credentials
         """
         self.client.credentials()
         url = reverse('add-to-favorite', kwargs={'bookId': book.id})
         response = self.client.post(url, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_fetch_favorites(self):
         """
@@ -328,15 +329,15 @@ class ShopAppTests(APITestCase):
         favorite = self.add_to_favorite(book=book, user=user)
         url = reverse('fetch-favorites')
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['id'] == favorite.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], favorite.id)
         """
         Clearing the credentials
         """
         self.client.credentials()
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_is_book_favorite(self):
         """
@@ -349,12 +350,12 @@ class ShopAppTests(APITestCase):
         )
         url = reverse('is-favorite', kwargs={'bookId': book.id})
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         favorite = self.add_to_favorite(book=book, user=user)
         url = reverse('is-favorite', kwargs={'bookId': book.id})
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['id'] == favorite.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], favorite.id)
 
     def test_remove_from_favorite(self):
         """
@@ -367,11 +368,11 @@ class ShopAppTests(APITestCase):
         )
         url = reverse('remove-favorite', kwargs={'bookId': book.id})
         response = self.client.delete(url, format='json')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.add_to_favorite(book=book, user=user)
         url = reverse('remove-favorite', kwargs={'bookId': book.id})
         response = self.client.delete(url, format='json')
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_like_book(self):
         """
@@ -383,20 +384,20 @@ class ShopAppTests(APITestCase):
         )
         url = reverse('like-book', kwargs={'bookId': 1})
         response = self.client.post(url, format='json')
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         book = self.create_book(name='test-book')
         url = reverse('like-book', kwargs={'bookId': book.id})
         response = self.client.post(url, format='json')
-        assert response.status_code == status.HTTP_201_CREATED
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         like = Like.objects.get()
-        assert like.book.id == book.id
-        assert like.user.id == user.id
+        self.assertEqual(like.book.id, book.id)
+        self.assertEqual(like.user.id, user.id)
         """
         Clearing the credentials
         """
         self.client.credentials()
         response = self.client.post(url, format='json')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_is_book_liked(self):
         """
@@ -408,12 +409,12 @@ class ShopAppTests(APITestCase):
         )
         url = reverse('is-liked', kwargs={'bookId': book.id})
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         like = self.add_to_like(book=book, user=user)
         url = reverse('is-liked', kwargs={'bookId': book.id})
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['id'] == like.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], like.id)
 
     def test_remove_like(self):
         """
@@ -426,8 +427,8 @@ class ShopAppTests(APITestCase):
         )
         url = reverse('remove-like', kwargs={'bookId': book.id})
         response = self.client.delete(url, format='json')
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.add_to_like(book=book, user=user)
         url = reverse('remove-like', kwargs={'bookId': book.id})
         response = self.client.delete(url, format='json')
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

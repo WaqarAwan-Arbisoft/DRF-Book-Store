@@ -120,11 +120,11 @@ class SocialMediaAppTest(APITestCase):
                                     data={'initiatedTowards': otherUser.id},
                                     format='json'
                                     )
-        assert response.status_code == status.HTTP_201_CREATED
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         friendship = Friendship.objects.get()
-        assert friendship.initiatedBy == user
-        assert friendship.initiatedTowards == otherUser
-        assert friendship.is_accepted == False
+        self.assertEqual(friendship.initiatedBy, user)
+        self.assertEqual(friendship.initiatedTowards, otherUser)
+        self.assertEqual(friendship.is_accepted, False)
 
     def test_fetch_all_friend_requests_of_user(self):
         """
@@ -136,15 +136,15 @@ class SocialMediaAppTest(APITestCase):
         response = self.client.get(
             url, format='json'
         )
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         user = self.create_user_and_set_token_credentials(
             email='book-test-user1@gmail.com'
         )
         response = self.client.get(
             url, format='json'
         )
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 0
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
         otherUser = self.create_user_and_set_token_credentials(
             email='book-test-user2@gmail.com'
         )
@@ -156,8 +156,8 @@ class SocialMediaAppTest(APITestCase):
         response = self.client.get(
             url, format='json'
         )
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
 
     def test_accept_friend_request(self):
         """
@@ -170,7 +170,7 @@ class SocialMediaAppTest(APITestCase):
         user2 = self.create_user(email=user2Mail)
         friendship = self.create_one_side_friendship(user=user1, other=user2)
         # checking if the friendship is initiated
-        assert Friendship.objects.get() == friendship
+        self.assertEqual(Friendship.objects.get(), friendship)
         token = self.get_token(user=user2)
         self.client.credentials(
             HTTP_AUTHORIZATION=token
@@ -178,10 +178,10 @@ class SocialMediaAppTest(APITestCase):
         response = self.client.patch(
             url, data={'initiatedBy': user1.id}, format='json')
         friendship = Friendship.objects.get()
-        assert response.status_code == status.HTTP_200_OK
-        assert friendship.initiatedBy == user1
-        assert friendship.initiatedTowards == user2
-        assert friendship.is_accepted == True
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(friendship.initiatedBy, user1)
+        self.assertEqual(friendship.initiatedTowards, user2)
+        self.assertEqual(friendship.is_accepted, True)
 
     def test_remove_friend_request(self):
         """
@@ -194,7 +194,7 @@ class SocialMediaAppTest(APITestCase):
         user2 = self.create_user(email=user2Mail)
         friendship = self.create_one_side_friendship(user=user1, other=user2)
         # checking if the friendship is initiated
-        assert Friendship.objects.get() == friendship
+        self.assertEqual(Friendship.objects.get(), friendship)
         url = reverse('remove-request',
                       kwargs={'userId': user1.id}
                       )
@@ -205,7 +205,7 @@ class SocialMediaAppTest(APITestCase):
         response = self.client.delete(
             url, format='json'
         )
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_remove_friend(self):
         """
@@ -217,12 +217,12 @@ class SocialMediaAppTest(APITestCase):
         user2 = self.create_user(email=user2Mail)
         self.create_friendship(user=user1, other=user2)
         friendship = Friendship.objects.get()
-        assert friendship.initiatedBy == user1
-        assert friendship.initiatedTowards == user2
-        assert friendship.is_accepted == True
+        self.assertEqual(friendship.initiatedBy, user1)
+        self.assertEqual(friendship.initiatedTowards, user2)
+        self.assertEqual(friendship.is_accepted, True)
         url = reverse('remove-friend', kwargs={'userId': user2.id})
         response = self.client.delete(url, format='json')
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_fetch_friendship(self):
         """
@@ -234,7 +234,7 @@ class SocialMediaAppTest(APITestCase):
         user2 = self.create_user(email=user2Mail)
         url = reverse('fetch-friendship', kwargs={'userId': user2.id})
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.create_friendship(user=user1, other=user2)
         response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
